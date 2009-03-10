@@ -19,30 +19,19 @@ from setuptools import setup, find_packages
 
 setup(
     author="Richard W. Lincoln",
-    author_email="rlincoln@eee.strath.ac.uk",
-    description="Power system and energy market simulator.",
-    url="http://pylon.eee.strath.ac.uk",
-    version="0.1.9",
-    entry_points={
-        "gui_scripts": ["envisage = pylon.plugin.main:main",
-                        "pylon = pylon.main:main"]
-    },
-#    extras_require={},
-#    ext_modules=[],
-    install_requires=[
-#        "Traits", "TraitsBackendWX", "Chaco", "EnvisagePlugins", "ConfigObj"
-    ],
-    license="GPLv2",
-    name="Pylon",
+    author_email="r dot w dot lincoln at gmail dot com",
+    description="Python implementation of the DOT language with Traits.",
+    url="http://rwl.github.com/godot",
+    version="0.1",
+    entry_points={"gui_scripts": ["pylon = pylon.main:main"]},
+    install_requires=["Traits", "dot2tex"],
+    license="MIT",
+    name="Godot",
     include_package_data=True,
-#    exclude_package_data={"": ["*.ecore"]},
-#    package_data={"": ["*.txt", "*.rst", "*.png", "*.jpg", "*.ini"]},
-#    package_dir={"": "src"},
-    packages=find_packages(),#"src"),#exclude=["docs", "docs.*"]),
-    namespace_packages=[],
-    test_suite = "pylon.test",
+    packages=find_packages(),
+    test_suite = "godot.test",
     platforms = ["Windows", "Linux", "Mac OS-X", "Unix", "Solaris"],
-    zip_safe=False
+    zip_safe=True
 )
 
 # EOF -------------------------------------------------------------------------
