@@ -71,12 +71,12 @@ class GraphTestCase(unittest.TestCase):
         """
         g = Graph()
         g.add_node("a", label="test1")
-        g.add_node("a", style="filled")
+        g.add_node("a", fixedsize=True)
         g.add_node("a", label="test2", shape="circle")
         self.assertEqual(len(g), 1)
 
         n = g.get_node("a")
-        self.assertEqual(n.style, "filled")
+        self.assertTrue(n.fixedsize)
         self.assertEqual(n.label, "test2")
         self.assertEqual(n.shape, "circle")
 
@@ -96,6 +96,22 @@ class GraphTestCase(unittest.TestCase):
         """ Test adding edges to a graph.
         """
         g = Graph()
+        n1, n2, n3 = Node("N1"), Node("N2"), Node("N3")
+        g.edges.append( Edge(n1, n2) )
+        g.add_edge("tail", "head", label="edge1")
+        g.add_edge(n2, n3, color="blue")
+
+        self.assertEqual(len(g.edges), 3)
+        self.assertEqual(g.edges[1].label, "edge1")
+
+
+    def test_add_subgraph(self):
+        """ Test adding subgraphs to a graph.
+        """
+        g = Graph()
+        subgraph = Subgraph(ID="sub1", level=1)
+        g.add_subgraph("sub2")
+        self.assertEqual(len(g.subgraphs), 2)
 
 
 if __name__ == "__main__":

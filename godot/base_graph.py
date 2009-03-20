@@ -36,6 +36,8 @@ from enthought.enable.api \
 from node import Node
 from edge import Edge
 from common import id_trait, Alias
+import godot.subgraph
+import godot.cluster
 
 from dot_writer import write_dot_graph
 
@@ -59,17 +61,29 @@ class BaseGraph(HasTraits):
     # Main graph nodes.
     nodes = List( Instance(Node) )
 
+    # Node from which new nodes are cloned.
+    default_node = Instance(Node)
+
     # Map if node IDs to node objects.
-    id_node_map = Dict
+#    id_node_map = Dict
 
     # Graph edges.
     edges = List(Instance(Edge))
+
+    # Edge from which new edges are cloned.
+    default_edge = Instance(Edge)
 
     # Separate layout regions.
     subgraphs = List(Instance("godot.subgraph.Subgraph"))
 
     # Clusters are encoded as subgraphs whose names have the prefix 'cluster'.
     clusters = List(Instance("godot.cluster.Cluster"))
+
+    # Level of the graph in the subgraph hierarchy.
+    level = Int(0, desc="level in the subgraph hierarchy")
+
+    # Padding to use for pretty string output.
+    padding = Str("    ", desc="padding for pretty printing")
 
     #--------------------------------------------------------------------------
     #  Enable trait definitions.
@@ -135,8 +149,11 @@ class BaseGraph(HasTraits):
             if nodeID in self.nodes:
                 node = self.nodes[ self.nodes.index(nodeID) ]
             else:
-                node = self.clone_traits(self.default_node, copy="deep")
-                node.ID = nodeID
+                if self.default_node is not None:
+                    node = self.default_node.clone_traits(copy="deep")
+                    node.ID = nodeID
+                else:
+                    node = Node(nodeID)
                 self.nodes.append( node )
         else:
             node = node_or_ID
@@ -183,7 +200,11 @@ class BaseGraph(HasTraits):
         else:
             directed = False
 
-        edge = Edge(tail_node, head_node, directed, **kwds)
+        if self.default_edge is not None:
+            edge = self.default_edge.clone_traits(copy="deep")
+            edge.set( **kwds )
+        else:
+            edge = Edge(tail_node, head_node, directed, **kwds)
 
         if "strict" in self.trait_names():
             if not self.strict:
@@ -192,6 +213,34 @@ class BaseGraph(HasTraits):
                 raise NotImplementedError
         else:
             self.edges.append(edge)
+
+
+    def add_subgraph(self, subgraph_or_ID):
+        """ Adds a subgraph to the graph.
+        """
+        if not isinstance(subgraph_or_ID, (godot.subgraph.Subgraph,
+                                           godot.cluster.Cluster)):
+            subgraphID = str( subgraph_or_ID )
+            if subgraph_or_ID[:7] == "cluster":
+                subgraph = Cluster(ID=subgraphID)
+            else:
+                subgraph = Subgraph(ID=subgraphID)
+        else:
+            subgraph = subgraph_or_ID
+
+        subgraph.default_node = self.default_node
+        subgraph.default_edge = self.default_edge
+        subgraph.level = self.level + 1
+        subgraph.padding += self.padding
+
+        if isinstance(subgraph, godot.subgraph.Subgraph):
+            self.subgraphs.append(subgraph)
+        elif isinstance(subgraph, godot.cluster.Cluster):
+            self.clusters.append(subgraph)
+        else:
+            raise
+
+        return subgraph
 
 
     def to_string(self):
