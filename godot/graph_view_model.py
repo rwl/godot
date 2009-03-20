@@ -365,16 +365,16 @@ class GraphViewModel(ModelView):
         IDs = [v.ID for v in graph.nodes]
 
         if n_nodes == 0:
-            from_node = Node(ID=make_unique_name("node", IDs))
-            to_node = Node(ID=make_unique_name("node", IDs + [from_node.ID]))
+            tail_node = Node(ID=make_unique_name("node", IDs))
+            head_node = Node(ID=make_unique_name("node", IDs + [tail_node.ID]))
         elif n_nodes == 1:
-            from_node = graph.nodes[0]
-            to_node = Node(ID=make_unique_name("node", IDs))
+            tail_node = graph.nodes[0]
+            head_node = Node(ID=make_unique_name("node", IDs))
         else:
-            from_node = graph.nodes[0]
-            to_node = graph.nodes[1]
+            tail_node = graph.nodes[0]
+            head_node = graph.nodes[1]
 
-        edge = Edge(from_node, to_node, _nodes=graph.nodes)
+        edge = Edge(tail_node, head_node, _nodes=graph.nodes)
 
         retval = edge.edit_traits(parent=info.ui.control, kind="livemodal")
 

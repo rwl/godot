@@ -110,14 +110,14 @@ class Graph(BaseGraph):
 
     # A strict graph is an unweighted, undirected graph containing no
 	# graph loops or multiple edges.
-    strict = Bool ( False, desc = "A strict graph is an unweighted, "
+    strict = Bool(False, desc="A strict graph is an unweighted, "
         "undirected graph containing no graph loops or multiple edges." )
 
     # Do edges have direction?
-    directed = Bool ( desc = "directed edges." )
+    directed = Bool(False, desc="directed edges.")
 
     # All graphs, subgraphs and clusters.
-    all_graphs = Property( List( Instance( BaseGraph ) ) )
+    all_graphs = Property( List(Instance(BaseGraph)) )
 
     # A dictionary containing the Graphviz executable names as keys
     # and their paths as values.  See the trait initialiser.
@@ -886,8 +886,8 @@ class Graph(BaseGraph):
         self.on_trait_change(self._on_nodes, "subgraphs*.nodes")
         self.on_trait_change(self._on_nodes, "subgraphs*.nodes_items")
 
-        # Listen for the addition of edges and check that the to_node and
-        # from_node instances exist in the graph or any subgraphs.
+        # Listen for the addition of edges and check that the heado_node and
+        # tail_node instances exist in the graph or any subgraphs.
         self.on_trait_change(self._on_edges, "subgraphs*.edges")
         self.on_trait_change(self._on_edges, "subgraphs*.edges_items")
 
@@ -1113,6 +1113,18 @@ class Graph(BaseGraph):
     #  Event handlers:
     #--------------------------------------------------------------------------
 
+    def _directed_changed(self, new):
+        """ Sets the connection string for all edges.
+        """
+        if new:
+            conn = "->"
+        else:
+            conn = "--"
+
+        for edge in [e for g in self.all_graphs for e in g.edges]:
+            edge.conn = conn
+
+
     def _on_nodes(self):
         """ Maintains each branch's list of available nodes in order that they
             may move themselves (InstanceEditor values).
@@ -1139,11 +1151,11 @@ class Graph(BaseGraph):
 
         for each_edge in edges:
             # Ensure the edge's nodes exist in the graph.
-            if each_edge.from_node not in all_nodes:
-                object.nodes.append( each_edge.from_node )
+            if each_edge.tail_node not in all_nodes:
+                object.nodes.append( each_edge.tail_node )
 
-            if each_edge.to_node not in all_nodes:
-                object.nodes.append( each_edge.to_node )
+            if each_edge.head_node not in all_nodes:
+                object.nodes.append( each_edge.head_node )
 
             # Initialise the edge's list of available nodes.
             each_edge._nodes = all_nodes

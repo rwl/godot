@@ -108,17 +108,20 @@ class Edge(Container):
     #  Trait definitions:
     #--------------------------------------------------------------------------
 
-    # From/source/start node.
-    from_node = Instance(Node, allow_none=False)
+    # Tail/from/source/start node.
+    tail_node = Instance(Node, allow_none=False)
 
-    # To/target/end node.
-    to_node = Instance(Node, allow_none=False)
+    # Head/to/target/end node.
+    head_node = Instance(Node, allow_none=False)
 
     # String identifier (TreeNode label).
-    name = Property(Str, depends_on=["from_node", "from_node.ID",
-                                     "to_node", "to_node.ID"])
+    name = Property(Str, depends_on=["tail_node", "tail_node.ID",
+                                     "head_node", "head_node.ID"])
 
-    # Nodes from which the 'to' and 'from' nodes may be selected.
+    # Connection string used in string output.
+    conn = Enum("->", "--")
+
+    # Nodes from which the tail and head nodes may be selected.
     _nodes = List(Instance(Node)) # GUI specific.
 
     #--------------------------------------------------------------------------
@@ -519,9 +522,9 @@ class Edge(Container):
     traits_view = View(
         Tabbed(
             Group(
-                Item(name="from_node",
+                Item(name="tail_node",
                     editor=InstanceEditor(name="_nodes", editable=False)),
-                Item(name="to_node",
+                Item(name="head_node",
                     editor=InstanceEditor(name="_nodes", editable=False)),
                 ["style", "layer", "color", "colorscheme", "dir",
                 "arrowsize", "constraint", "decorate", "showboxes", "tooltip",
@@ -553,11 +556,16 @@ class Edge(Container):
     #  "object" interface:
     #--------------------------------------------------------------------------
 
-    def __init__(self, from_node, to_node, **traits):
-        """ Return a new Edge instance. """
+    def __init__(self, tail_node, head_node, directed=False, **traits):
+        """ Initialises a new Edge instance.
+        """
+        self.tail_node = tail_node
+        self.head_node = head_node
 
-        self.from_node = from_node
-        self.to_node = to_node
+        if directed:
+            self.conn = "->"
+        else:
+            self.conn = "--"
 
         super(Edge, self).__init__(**traits)
 
@@ -568,8 +576,9 @@ class Edge(Container):
     def _get_name(self):
         """ Property getter.
         """
-        if (self.from_node is not None) and (self.to_node is not None):
-            return "%s -> %s" % (self.from_node.ID, self.to_node.ID)
+        if (self.tail_node is not None) and (self.head_node is not None):
+            return "%s %s %s" % (self.tail_node.ID, self.conn,
+                                 self.head_node.ID)
         else:
             return "Edge"
 

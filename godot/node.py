@@ -489,6 +489,20 @@ class Node(HasTraits):
         """
         return hash(self.ID)
 
+
+    def __cmp__(self, other):
+        """ Called by comparison operations if rich comparison
+            (__eq__, __lt__, __gt__) is not defined.
+        """
+        try:
+            if isinstance(other, Node) and (self.ID == other.ID):
+                return 0
+            elif self.ID == other:
+                return 0
+        except:
+            pass
+        return -1
+
     #--------------------------------------------------------------------------
     #  Trait initialisers:
     #--------------------------------------------------------------------------

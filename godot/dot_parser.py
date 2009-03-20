@@ -363,7 +363,7 @@ class DotParser:
 #                        ("add_graph_to_graph_edge", src[1], dest[1], opts)
 #                    )
 #                elif srcgraph:
-#                    edgelist.append(("add_graph_to_node_edge",src[1],dest,opts))
+#                    edgelist.append(("add_graph_head_node_edge",src[1],dest,opts))
 #                else:
 #                    edgelist.append(("add_node_to_graph_edge",src,dest[1],opts))
 #            else:
@@ -380,16 +380,16 @@ class DotParser:
                 dst = dst[0]
 
             # If a node didn't exist we would have to create one.
-            from_node = None#graph.get_node(src)
-            if from_node is None:
-                from_node = Node(ID=src)
-#                graph.nodes.append(from_node)
-            to_node = None#graph.get_node(dst)
-            if to_node is None:
-                to_node = Node(ID=dst)
-#                graph.nodes.append(to_node)
+            tail_node = None#graph.get_node(src)
+            if tail_node is None:
+                tail_node = Node(ID=src)
+#                graph.nodes.append(tail_node)
+            head_node = None#graph.get_node(dst)
+            if head_node is None:
+                head_node = Node(ID=dst)
+#                graph.nodes.append(head_node)
 
-            edge = Edge(from_node, to_node, **opts)
+            edge = Edge(tail_node, head_node, **opts)
             edgelist.append(edge)
 
         return edgelist

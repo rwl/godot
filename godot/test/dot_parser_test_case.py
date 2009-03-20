@@ -274,8 +274,8 @@ class DotParserTestCase(unittest.TestCase):
 #
 #        self.assertEqual(len(graph.edges), 7)
 #
-#        self.assertEqual(graph.edges[0].from_node.ID, "node1")
-#        self.assertEqual(graph.edges[0].to_node.ID, "node2")
+#        self.assertEqual(graph.edges[0].tail_node.ID, "node1")
+#        self.assertEqual(graph.edges[0].head_node.ID, "node2")
 #
 #        self.assertEqual(graph.edges[1].label, "foo")
 #

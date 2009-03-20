@@ -109,16 +109,16 @@ def edge_factory(**row_factory_kw):
         IDs = [v.ID for v in graph.nodes]
 
         if n_nodes == 0:
-            from_node = Node(ID=make_unique_name("node", IDs))
-            to_node = Node(ID=make_unique_name("node", IDs))
+            tail_node = Node(ID=make_unique_name("node", IDs))
+            head_node = Node(ID=make_unique_name("node", IDs))
         elif n_nodes == 1:
-            from_node = graph.nodes[0]
-            to_node = Node(ID=make_unique_name("node", IDs))
+            tail_node = graph.nodes[0]
+            head_node = Node(ID=make_unique_name("node", IDs))
         else:
-            from_node = graph.nodes[0]
-            to_node = graph.nodes[1]
+            tail_node = graph.nodes[0]
+            head_node = graph.nodes[1]
 
-        return Edge(from_node, to_node, _nodes=graph.nodes)
+        return Edge(tail_node, head_node, _nodes=graph.nodes)
     else:
         return None
 
@@ -128,10 +128,10 @@ def edge_factory(**row_factory_kw):
 
 edge_table_editor = TableEditor(
     columns=[
-        ObjectColumn(name="from_node", label="From",
+        ObjectColumn(name="tail_node", label="From",
             editor=InstanceEditor(name="_nodes", editable=False),
             format_func=lambda obj: obj.ID),
-        ObjectColumn(name="to_node", label="To",
+        ObjectColumn(name="head_node", label="To",
             editor=InstanceEditor(name="_nodes", editable=False),
             format_func=lambda obj: obj.ID),
         ObjectColumn(name="label"),

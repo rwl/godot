@@ -137,9 +137,11 @@ def _dot_edge_str(edge, padding="    ", directed = True):
     else:
         attrstr = ""
 
-    edge_str = "%s%s%s %s %s%s%s;\n" % ( padding, edge.from_node.ID,
-                                         edge.tailport, conn, edge.to_node.ID,
-                                         edge.headport, attrstr )
+    edge_str = "%s%s%s %s %s%s%s;\n" % ( padding,
+                                         edge.tail_node.ID, edge.tailport,
+                                         conn,
+                                         edge.head_node.ID, edge.headport,
+                                         attrstr )
 
     return edge_str
 
