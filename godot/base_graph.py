@@ -28,7 +28,7 @@
 
 from enthought.traits.api \
     import HasTraits, Str, List, Instance, Bool, Property, Constant, \
-    ReadOnly, Dict, TraitListEvent
+    ReadOnly, Dict, TraitListEvent, Int, on_trait_change
 
 from enthought.enable.api \
     import Container
@@ -36,8 +36,7 @@ from enthought.enable.api \
 from node import Node
 from edge import Edge
 from common import id_trait, Alias
-import godot.subgraph
-import godot.cluster
+import godot
 
 from dot_writer import write_dot_graph
 
@@ -61,23 +60,26 @@ class BaseGraph(HasTraits):
     # Main graph nodes.
     nodes = List( Instance(Node) )
 
-    # Node from which new nodes are cloned.
-    default_node = Instance(Node)
-
     # Map if node IDs to node objects.
 #    id_node_map = Dict
 
     # Graph edges.
     edges = List(Instance(Edge))
 
-    # Edge from which new edges are cloned.
-    default_edge = Instance(Edge)
-
     # Separate layout regions.
     subgraphs = List(Instance("godot.subgraph.Subgraph"))
 
     # Clusters are encoded as subgraphs whose names have the prefix 'cluster'.
     clusters = List(Instance("godot.cluster.Cluster"))
+
+    # Node from which new nodes are cloned.
+    default_node = Instance(Node)
+
+    # Edge from which new edges are cloned.
+    default_edge = Instance(Edge)
+
+    # Graph from which new subgraphs are cloned.
+    default_graph = Instance(HasTraits)
 
     # Level of the graph in the subgraph hierarchy.
     level = Int(0, desc="level in the subgraph hierarchy")
@@ -136,6 +138,17 @@ class BaseGraph(HasTraits):
         for each_edge in self.edges:
             if (each_edge.tail_node == node) or (each_edge.head_node == node):
                 yield each_edge
+
+    def _default_node_default(self):
+        """ Trait initialiser.
+        """
+        return Node("default")
+
+
+    def _default_edge_default(self):
+        """ Trait initialiser.
+        """
+        return Edge("tail", "head")
 
     #--------------------------------------------------------------------------
     #  Public interface:
@@ -221,10 +234,10 @@ class BaseGraph(HasTraits):
         if not isinstance(subgraph_or_ID, (godot.subgraph.Subgraph,
                                            godot.cluster.Cluster)):
             subgraphID = str( subgraph_or_ID )
-            if subgraph_or_ID[:7] == "cluster":
-                subgraph = Cluster(ID=subgraphID)
+            if subgraph_or_ID.startswith("cluster"):
+                subgraph = godot.cluster.Cluster(ID=subgraphID)
             else:
-                subgraph = Subgraph(ID=subgraphID)
+                subgraph = godot.subgraph.Subgraph(ID=subgraphID)
         else:
             subgraph = subgraph_or_ID
 
@@ -241,6 +254,12 @@ class BaseGraph(HasTraits):
             raise
 
         return subgraph
+
+
+    def add_cluster(self, cluster_or_ID):
+        """ Adds a cluster to the graph.
+        """
+        return self.add_subgraph(cluster_or_ID)
 
 
     def to_string(self):

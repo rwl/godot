@@ -27,10 +27,14 @@
 #  Imports:
 #------------------------------------------------------------------------------
 
-from dot2tex.dotparsing import DotDataParser
+from dot2tex.dotparsing \
+    import DotDataParser, ADD_NODE, ADD_EDGE, ADD_GRAPH_TO_NODE_EDGE, \
+    ADD_NODE_TO_GRAPH_EDGE, ADD_GRAPH_TO_GRAPH_EDGE, ADD_SUBGRAPH, \
+    SET_DEF_NODE_ATTR, SET_DEF_EDGE_ATTR, SET_DEF_GRAPH_ATTR, SET_GRAPH_ATTR
 
 from graph import Graph
 from subgraph import Subgraph
+from cluster import Cluster
 from node import Node
 from edge import Edge
 
@@ -41,6 +45,27 @@ from edge import Edge
 class GodotDataParser(DotDataParser):
     """ Parses Graphviz dot data.
     """
+
+    def parse_dot_file(self, file_or_filename):
+        """ Returns a graph given a file or a filename.
+        """
+        if isinstance(file_or_filename, basestring):
+            file = None
+            try:
+                file = open(file_or_filename, "rb")
+                data = file.read()
+            except:
+                print "Could not open %s." % file_or_filename
+                return None
+            finally:
+                if file is not None:
+                    file.close()
+        else:
+            file = file_or_filename
+            data = file.read()
+
+        return self.parse_dot_data(data)
+
 
     def build_top_graph(self,tokens):
         """ Build a Godot graph instance from parsed data.
@@ -54,6 +79,7 @@ class GodotDataParser(DotDataParser):
         graph = Graph(ID=graphname, strict=strict, directed=directed)
         self.graph = self.build_graph(graph, tokens[3])
 
+
     def build_graph(self, graph, tokens):
         """ Builds a Godot graph.
         """
@@ -63,8 +89,7 @@ class GodotDataParser(DotDataParser):
             cmd = element[0]
             if cmd == ADD_NODE:
                 cmd, nodename, opts = element
-                node = Node(ID=nodename, **opts)
-                graph.nodes.append(node)
+                graph.add_node(nodename, **opts)
 
             elif cmd == ADD_EDGE:
                 cmd, src, dest, opts = element
@@ -76,9 +101,8 @@ class GodotDataParser(DotDataParser):
                     destport = dest[1]
                     dest = dest[0]
 
-                edge = Edge(from_node=src, to_node=dest,
-                            tailport=srcport, headport=destport, **opts)
-                graph.edges.append(edge)
+                graph.add_edge(src, dest, tailport=srcport, headport=destport,
+                               **opts)
 
             elif cmd in [ADD_GRAPH_TO_NODE_EDGE,
                          ADD_GRAPH_TO_GRAPH_EDGE,
@@ -101,9 +125,9 @@ class GodotDataParser(DotDataParser):
                 else:
                     dest = subgraph
 
-                src_is_graph = isinstance(src, Subgraph)
-                dst_is_graph = isinstance(dst, Subgraph)
-                edges = []
+                src_is_graph = isinstance(src, (Subgraph, Cluster))
+                dst_is_graph = isinstance(dst, (Subgraph, Cluster))
+
                 if src_is_graph:
                     src_nodes = src.nodes
                 else:
@@ -115,40 +139,34 @@ class GodotDataParser(DotDataParser):
 
                 for src_node in src_nodes:
                     for dst_node in dst_nodes:
-                        edge = Edge(from_node=src_node, to_node=dst_node,
-                                    tailport=srcport, headport=destport,**kwds)
-                        edges.append(edge)
-
-                graph.edges.extend(edges)
+                        graph.add_edge(from_node=src_node, to_node=dst_node,
+                                       tailport=srcport, headport=destport,
+                                       **kwds)
 
             elif cmd == SET_GRAPH_ATTR:
-                setattr(graph, **element[1])
+                graph.set( **element[1] )
 
             elif cmd == SET_DEF_NODE_ATTR:
-#                graph.add_default_node_attr(**element[1])
-#                defattr = DotDefaultAttr('node',**element[1])
-#                graph.allitems.append(defattr)
-                raise NotImplementedError
+                graph.default_node.set( **element[1] )
 
             elif cmd == SET_DEF_EDGE_ATTR:
-#                graph.add_default_edge_attr(**element[1])
-#                defattr = DotDefaultAttr('edge',**element[1])
-#                graph.allitems.append(defattr)
-                raise NotImplementedError
+                graph.default_edge.set( **element[1] )
 
             elif cmd == SET_DEF_GRAPH_ATTR:
-#                graph.add_default_graph_attr(**element[1])
-#                defattr = DotDefaultAttr('graph',**element[1])
-#                graph.allitems.append(defattr)
-                raise NotImplementedError
+                graph.default_graph.set (**element[1] )
 
             elif cmd == ADD_SUBGRAPH:
                 cmd, name, elements = element
                 if subgraph:
                     prev_subgraph = subgraph
-                subgraph = Subgraph(ID=name)
-                subgraph = self.build_graph(subgraph, elements)
-                graph.subgraphs.append(subgraph)
+                if name.startswith("cluster"):
+                    cluster = Cluster(ID=name)
+                    cluster = self.build_graph(cluster, elements)
+                    graph.add_cluster(cluster)
+                else:
+                    subgraph = Subgraph(ID=name)
+                    subgraph = self.build_graph(subgraph, elements)
+                    graph.add_subgraph(subgraph)
 
         return graph
 

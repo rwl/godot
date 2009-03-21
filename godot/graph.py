@@ -869,8 +869,8 @@ class Graph(BaseGraph):
     #  Views:
     #--------------------------------------------------------------------------
 
-#    traits_view = tabbed_view
-    traits_view = graph_view
+    traits_view = tabbed_view
+#    traits_view = graph_view
 
     #--------------------------------------------------------------------------
     #  "object" interface:
@@ -1100,6 +1100,7 @@ class Graph(BaseGraph):
         top_graph = self
 
         def get_subgraphs(graph):
+            assert isinstance(graph, BaseGraph)
             subgraphs = graph.subgraphs[:]
             for subgraph in graph.subgraphs:
                 subsubgraphs = get_subgraphs(subgraph)

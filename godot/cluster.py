@@ -262,7 +262,8 @@ class Cluster(BaseGraph):
 
     # Set style for node or edge. For cluster subgraph, if "filled", the
     # cluster box's background is filled.
-    style = ListStr(desc="style for node")
+#    style = ListStr(desc="style for node")
+    style = Str(desc="style for node")
 
     # If the object has a URL, this attribute determines which window
     # of the browser is used for the URL.

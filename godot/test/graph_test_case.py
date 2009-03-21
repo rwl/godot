@@ -32,6 +32,68 @@ import unittest
 from godot.api import Graph, Subgraph, Cluster, Node, Edge
 
 #------------------------------------------------------------------------------
+#  "NodeTestCase" class:
+#------------------------------------------------------------------------------
+
+class NodeTestCase(unittest.TestCase):
+    """ Defines a test case for nodes.
+    """
+
+    def test_create_node(self):
+        """ Test creation of a node.
+        """
+        node = Node(ID="test_node", shape="circle")
+        self.failUnless(node.name == "test_node")
+        self.assertEqual(node.shape, "circle")
+
+#------------------------------------------------------------------------------
+#  "EdgeTestCase" class:
+#------------------------------------------------------------------------------
+
+class EdgeTestCase(unittest.TestCase):
+    """ Defines a test case for edges.
+    """
+
+    def test_create_edge(self):
+        """ Test creation of a edge.
+        """
+        edge = Edge("a", Node("b"), dir="both", label="Test Edge")
+        self.failUnless(edge.tail_node.name == "a")
+        self.failUnless(edge.head_node.name == "b")
+        self.assertEqual(edge.dir, "both")
+        self.assertEqual(edge.label, "Test Edge")
+
+#------------------------------------------------------------------------------
+#  "SubgraphTestCase" class:
+#------------------------------------------------------------------------------
+
+class SubgraphTestCase(unittest.TestCase):
+    """ Defines a test case for subgraphs.
+    """
+
+    def test_create_subgraph(self):
+        """ Test creation of a subgraph.
+        """
+        subgraph = Subgraph(ID="subgraph1", rank="max")
+        self.failUnless(subgraph.name == "subgraph1")
+        self.assertEqual(subgraph.rank, "max")
+
+
+    def test_create_cluster(self):
+        """ Test creation of a cluster.
+        """
+        cluster = Cluster(ID="cluster_1", fixedsize=True)
+        self.failUnless(cluster.name == "cluster_1")
+        self.assertTrue(cluster.fixedsize)
+
+
+    def test_cluster_name(self):
+        """ Test that a cluster's name always starts 'cluster'.
+        """
+        cluster = Cluster(ID="small")
+        self.failUnless(cluster.name == "cluster_small")
+
+#------------------------------------------------------------------------------
 #  "GraphTestCase" class:
 #------------------------------------------------------------------------------
 
@@ -67,7 +129,7 @@ class GraphTestCase(unittest.TestCase):
 
 
     def test_add_equal_nodes(self):
-        """ Test adding nodes with existing IDs.
+        """ Test adding nodes with existing names.
         """
         g = Graph()
         g.add_node("a", label="test1")
@@ -82,7 +144,7 @@ class GraphTestCase(unittest.TestCase):
 
 
     def test_add_nonstring_nodes(self):
-        """ Test adding nodes with nonstring IDs.
+        """ Test adding nodes with non-string names.
         """
         g = Graph()
         n = g.add_node(6)
@@ -110,8 +172,19 @@ class GraphTestCase(unittest.TestCase):
         """
         g = Graph()
         subgraph = Subgraph(ID="sub1", level=1)
+        g.add_subgraph(subgraph)
         g.add_subgraph("sub2")
         self.assertEqual(len(g.subgraphs), 2)
+
+
+    def test_add_cluster(self):
+        """ Test adding clusters to a graph.
+        """
+        g = Graph()
+        cluster = Cluster(ID="cluster0", level=1)
+        g.add_cluster(cluster)
+        g.add_cluster("cluster1")
+        self.assertEqual(len(g.clusters), 2)
 
 
 if __name__ == "__main__":

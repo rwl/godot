@@ -556,9 +556,22 @@ class Edge(Container):
     #  "object" interface:
     #--------------------------------------------------------------------------
 
-    def __init__(self, tail_node, head_node, directed=False, **traits):
+    def __init__(self, tailnode_or_ID, headnode_or_ID, directed=False,
+                 **traits):
         """ Initialises a new Edge instance.
         """
+        if not isinstance(tailnode_or_ID, Node):
+            tailnodeID = str( tailnode_or_ID )
+            tail_node = Node(tailnodeID)
+        else:
+            tail_node = tailnode_or_ID
+
+        if not isinstance(headnode_or_ID, Node):
+            headnodeID = str( headnode_or_ID )
+            head_node = Node(headnodeID)
+        else:
+            head_node = headnode_or_ID
+
         self.tail_node = tail_node
         self.head_node = head_node
 

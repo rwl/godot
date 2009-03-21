@@ -61,7 +61,8 @@ node_shapes = ["rect", "rectangle", "box", "ellipse", "circle", "invtriangle",
     "invtrapezium", "point", "egg", "triangle", "plaintext", "diamond",
     "trapezium", "parallelogram", "house", "pentagon", "hexagon", "septagon",
     "octagon", "doublecircle", "doubleoctagon", "tripleoctagon", "invhouse",
-    "none", "note", "tab", "box3d", "component"]
+    "none", "note", "tab", "box3d", "component"] + ["Msquare", "Mdiamond",
+                                                    "Mcircle"]
 
 shape_trait = Enum(node_shapes, desc="node shape", label="Node shape")
 
@@ -371,7 +372,8 @@ class Node(HasTraits):
 
     # Set style for node or edge. For cluster subgraph, if "filled", the
     # cluster box's background is filled.
-    style = ListStr(desc="style for node")
+#    style = ListStr(desc="style for node")
+    style = Str(desc="style for node")
 
     # If the object has a URL, this attribute determines which window
     # of the browser is used for the URL.
