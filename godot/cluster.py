@@ -233,7 +233,7 @@ class Cluster(BaseGraph):
 
     # Label position, in points. The position indicates the center of the
     # label.
-    lp = point_trait
+    lp = Str#point_trait
 
     # By default, the justification of multi-line labels is done within the
     # largest context that makes sense. Thus, in the label of a polygonal node,

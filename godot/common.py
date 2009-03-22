@@ -139,7 +139,8 @@ peripheries_trait = Int(
 # correspond to the control points of a B-spline from p1 to pn. If startp is
 # given, it touches one node of the edge, and the arrowhead goes from p1 to
 # startp. If startp is not given, p1 touches a node. Similarly for pn and endp.
-pos_trait = Float(desc="position of node, or spline control points")
+pos_trait = Str(desc="position of node, or spline control points")
+#pos_trait = Float(desc="position of node, or spline control points")
 
 rectangle_trait = Tuple(
     Float, Float, Float, Float,

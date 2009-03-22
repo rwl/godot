@@ -26,25 +26,47 @@
 #  Imports:
 #------------------------------------------------------------------------------
 
+import os
+
+import tempfile
+
 from enthought.traits.api \
     import HasTraits, Str, List, Instance, Bool, Property, Constant, \
-    ReadOnly, Dict, TraitListEvent, Int, on_trait_change
+    ReadOnly, Dict, TraitListEvent, Int, Enum, on_trait_change
 
 from enthought.enable.api \
-    import Container
+    import Viewport, Container
 
-from node import Node
-from edge import Edge
-from common import id_trait, Alias
+from enthought.enable.tools.api \
+    import ViewportPanTool, ViewportZoomTool
+
+from node \
+    import Node
+
+from edge \
+    import Edge
+
+from common \
+    import id_trait, Alias
+
 import godot
 
-from dot_writer import write_dot_graph
+from dot_writer \
+    import write_dot_graph
+
+from util import Serializable
+
+FORMATS = ['dot', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dia', 'fig', 'gd',
+           'gd2', 'gif', 'hpgl', 'imap', 'imap_np', 'ismap', 'jpe', 'jpeg',
+           'jpg', 'mif', 'mp', 'pcl', 'pdf', 'pic', 'plain', 'plain-ext',
+           'png', 'ps', 'ps2', 'svg', 'svgz', 'vml', 'vmlz', 'vrml', 'vtx',
+           'wbmp', 'xdot', 'xlib', 'bmp', 'eps', 'gtk', 'ico', 'tga', 'tiff']
 
 #------------------------------------------------------------------------------
 #  "BaseGraph" class:
 #------------------------------------------------------------------------------
 
-class BaseGraph(HasTraits):
+class BaseGraph ( Serializable ):
     """ Defines a representation of a graph in Graphviz's dot language """
 
     #--------------------------------------------------------------------------
@@ -87,12 +109,26 @@ class BaseGraph(HasTraits):
     # Padding to use for pretty string output.
     padding = Str("    ", desc="padding for pretty printing")
 
+    # A dictionary containing the Graphviz executable names as keys
+    # and their paths as values.  See the trait initialiser.
+    programs = Dict(desc="names and paths of Graphviz executables")
+
+    # The Graphviz layout program
+    program = Enum("dot", "circo", "neato", "twopi", "fdp",
+        desc="layout program used by Graphviz")
+
+    # Format for writing to file.
+    format = Enum(FORMATS, desc="format used when writing to file")
+
     #--------------------------------------------------------------------------
     #  Enable trait definitions.
     #--------------------------------------------------------------------------
 
     # Container of graph components.
     component = Instance(Container, desc="container of graph components.")
+
+    # A view into a sub-region of the canvas.
+    vp = Instance(Viewport, desc="a view of a sub-region of the canvas")
 
     #--------------------------------------------------------------------------
     #  Xdot trait definitions:
@@ -109,6 +145,22 @@ class BaseGraph(HasTraits):
     #--------------------------------------------------------------------------
     #  "object" interface:
     #--------------------------------------------------------------------------
+
+#    def __init__(self, **traits):
+#        """ Initialises a new BaseGraph instance.
+#        """
+#        super(BaseGraph, self).__init__(**traits)
+#
+#        # Automatically creates all the methods enabling the saving
+#        # of output in any of the supported formats.
+#        for frmt in FORMATS:
+#            self.__setattr__('save_'+frmt,
+#                             lambda flo, f=frmt, prog=self.program: \
+#                             flo.write( self.create(format=f, prog=prog) ))
+#            f = self.__dict__['save_'+frmt]
+#            f.__doc__ = '''Refer to the docstring accompanying the 'create'
+#            method for more information.'''
+
 
     def __len__(self):
         """ Return the order of the graph when requested by len().
@@ -139,6 +191,63 @@ class BaseGraph(HasTraits):
             if (each_edge.tail_node == node) or (each_edge.head_node == node):
                 yield each_edge
 
+
+    def __str__(self):
+        """ Returns a string representation of the graph in dot language. It
+            will return the graph and all its subelements in string form.
+        """
+        return write_dot_graph(self)
+#        s = ""
+#        padding = self.padding
+#        if len(self.allitems) > 0:
+#            grstr = "".join(
+#                ["%s%s" % (padding, n) for n in map(str, flatten(self.allitems))]
+#            )
+#            attrstr = ",".join(["%s=%s" % \
+#            (quote_if_necessary(key),quote_if_necessary(val)) \
+#                for key,val in self.attr.items()])
+#            if attrstr:
+#                attrstr = "%sgraph [%s];" % (padding,attrstr)
+#            if not isinstance(self,DotSubGraph):
+#                s = ""
+#                if self.strict:
+#                    s += 'strict '
+#                if self.directed:
+#                    s += "digraph"
+#                else:
+#                    s += "graph"
+#                return "%s %s{\n%s\n%s\n}" % (s,self.get_name(),grstr,attrstr)
+#            else:
+#                return "%s %s{\n%s\n%s\n%s}" % ('subgraph',self.get_name(),grstr,attrstr,padding)
+#
+#        subgraphstr = "\n".join(["%s%s" % (padding,n) for n in map(str,self.subgraphs)])
+#
+#        nodestr =  "".join(["%s%s" % (padding,n) for n in \
+#            map(str,self._nodes.itervalues())])
+#        edgestr =  "".join(["%s%s" % (padding,n) for n in \
+#            map(str,flatten(self.edges.itervalues()))])
+#
+#        attrstr = ",".join(["%s=%s" % \
+#            (quote_if_necessary(key),quote_if_necessary(val)) \
+#                for key,val in self.attr.items()])
+#        if attrstr:
+#            attrstr = "%sgraph [%s];" % (padding,attrstr)
+#        if not isinstance(self,DotSubGraph):
+#            s = ""
+#            if self.strict:
+#                s += 'strict '
+#            if self.directed:
+#                s += "digraph"
+#            else:
+#                s += "graph"
+#            return "%s %s{\n%s\n%s\n%s\n%s\n}" % (s,self.get_name(),subgraphstr,attrstr,nodestr,edgestr)
+#        else:
+#            return "%s %s{\n%s\n%s\n%s\n%s\n%s}" % ('subgraph',self.get_name(),subgraphstr,attrstr,nodestr,edgestr,padding)
+
+    #--------------------------------------------------------------------------
+    #  Trait initialisers:
+    #--------------------------------------------------------------------------
+
     def _default_node_default(self):
         """ Trait initialiser.
         """
@@ -150,9 +259,157 @@ class BaseGraph(HasTraits):
         """
         return Edge("tail", "head")
 
+
+    def _default_graph_default(self):
+        """ Trait initialiser.
+        """
+        return godot.cluster.Cluster(ID="cluster_default")
+
+
+    def _component_default(self):
+        """ Trait initialiser.
+        """
+        return Container(fit_window=False, auto_size=True)
+
+
+    def _vp_default(self):
+        """ Trait initialiser.
+        """
+        vp = Viewport(component=self.component)
+        vp.enable_zoom=True
+
+        vp.view_position = [0,0]
+
+        vp.tools.append(ViewportPanTool(vp))
+
+        return vp
+
     #--------------------------------------------------------------------------
     #  Public interface:
     #--------------------------------------------------------------------------
+
+    def save_dot(self, flo, prog=None):
+        """ Writes a graph to a file.
+
+            Given a file like object 'flo' it will truncate it and write a
+            representation of the graph defined by the dot object and in the
+            format specified.
+            The format 'raw' is used to dump the string representation
+            of the Dot object, without further processing.
+            The output can be processed by any of graphviz tools, defined
+            in 'prog', which defaults to 'dot'.
+        """
+        flo.write( str(self) )
+
+
+    def save_xdot(self, flo, prog=None):
+        prog = self.program if prog is None else prog
+        flo.write( self.create(prog, "xdot") )
+
+
+    def save_png(self, flo, prog=None):
+        prog = self.program if prog is None else prog
+        flo.write( self.create(prog, "png") )
+
+
+    @classmethod
+    def load_dot(cls, flo):
+        parser = godot.dot_data_parser.GodotDataParser()
+        return parser.parse_dot_file(flo)
+
+
+    @classmethod
+    def load_xdot(cls, flo):
+        parser = godot.dot_data_parser.GodotDataParser()
+        return parser.parse_dot_file(flo)
+
+
+    def create(self, prog=None, format=None):
+        """ Creates and returns a representation of the graph using the
+            Graphviz layout program given by 'prog', according to the given
+            format.
+
+            Writes the graph to a temporary dot file and processes it with
+            the program given by 'prog' (which defaults to 'dot'), reading
+            the output and returning it as a string if the operation is
+            successful. On failure None is returned.
+        """
+        prog = self.program if prog is None else prog
+        format = self.format if format is None else format
+
+        # Make a temporary file ...
+        tmp_fd, tmp_name = tempfile.mkstemp()
+        os.close( tmp_fd )
+        # ... and save the graph to it.
+        self.save_to_file(tmp_name, format="dot")
+
+        # Get the temporary file directory name.
+        tmp_dir = os.path.dirname( tmp_name )
+
+        # TODO: Shape image files (See Pydot).
+
+        # Process the file using the layout program, specifying the format.
+        p = subprocess.Popen(
+            ( self.programs[ prog ], '-T'+format, tmp_name ),
+            cwd=tmp_dir,
+            stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+
+        stderr = p.stderr
+        stdout = p.stdout
+
+        # Make sense of the standard output form the process.
+        stdout_output = list()
+        while True:
+            data = stdout.read()
+            if not data:
+                break
+            stdout_output.append(data)
+        stdout.close()
+
+        if stdout_output:
+            stdout_output = ''.join(stdout_output)
+
+        # Similarly so for any standard error.
+        if not stderr.closed:
+            stderr_output = list()
+            while True:
+                data = stderr.read()
+                if not data:
+                    break
+                stderr_output.append(data)
+            stderr.close()
+
+            if stderr_output:
+                stderr_output = ''.join(stderr_output)
+
+        #pid, status = os.waitpid(p.pid, 0)
+        status = p.wait()
+
+        if status != 0 :
+            logger.error("Program terminated with status: %d. stderr " \
+                "follows: %s" % ( status, stderr_output ) )
+        elif stderr_output:
+            logger.error( "%s", stderr_output )
+
+        # TODO: Remove shape image files from the temporary directory.
+
+        # Remove the temporary file.
+        os.unlink(tmp_name)
+
+        return stdout_output
+
+
+    def arrange_all(self):
+        """ Sets for the _draw_ and _ldraw_ attributes for each of the graph
+            sub-elements by processing the xdot format of the graph.
+        """
+        xdot_data = self.create( format = "xdot" )
+
+        print "XDOT DATA:\n\n", xdot_data
+
+        parser = dot_parser.DotParser()
+        xdot_graph = parser.parse_dot_data( xdot_data )
+
 
     def add_node(self, node_or_ID, **kwds):
         """ Adds a node to the graph.
@@ -260,22 +517,6 @@ class BaseGraph(HasTraits):
         """ Adds a cluster to the graph.
         """
         return self.add_subgraph(cluster_or_ID)
-
-
-    def to_string(self):
-        """ Returns a string representation of the graph in dot language. It
-            will return the graph and all its subelements in string form.
-        """
-        return write_dot_graph(self)
-
-    #--------------------------------------------------------------------------
-    #  Trait initialisers:
-    #--------------------------------------------------------------------------
-
-    def _component_default(self):
-        """ Trait initialiser.
-        """
-        return Container(fit_window=False, auto_size=True)
 
     #--------------------------------------------------------------------------
     #  "BaseGraph" interface:

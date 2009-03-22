@@ -119,32 +119,6 @@ class Graph(BaseGraph):
     # All graphs, subgraphs and clusters.
     all_graphs = Property( List(Instance(BaseGraph)) )
 
-    # A dictionary containing the Graphviz executable names as keys
-    # and their paths as values.  See the trait initialiser.
-    programs = Dict(desc="names and paths of Graphviz executables")
-
-    # The Graphviz layout program
-    program = Enum("dot", "circo", "neato", "twopi", "fdp",
-        desc="layout program used by Graphviz")
-
-    # Format for writing to file.
-    format = Enum('dot', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dia',
-        'fig', 'gd', 'gd2', 'gif', 'hpgl', 'imap', 'imap_np', 'ismap',
-        'jpe', 'jpeg', 'jpg', 'mif', 'mp', 'pcl', 'pdf', 'pic', 'plain',
-        'plain-ext', 'png', 'ps', 'ps2', 'svg', 'svgz', 'vml', 'vmlz',
-        'vrml', 'vtx', 'wbmp', 'xdot', 'xlib', 'bmp', 'eps', 'gtk', 'ico',
-        'tga', 'tif', 'tiff', desc="format used when writing to file")
-
-    #--------------------------------------------------------------------------
-    #  Enable trait definitions.
-    #--------------------------------------------------------------------------
-
-    # Overriding the BaseGraph to use a Canvas for the root graph.
-#    component = Instance(Canvas, desc="canvas for graph drawing")
-
-    # A view into a sub-region of the canvas.
-    vp = Instance(Viewport, desc="a view of a sub-region of the canvas")
-
     #--------------------------------------------------------------------------
     #  Dot trait definitions.
     #--------------------------------------------------------------------------
@@ -898,6 +872,10 @@ class Graph(BaseGraph):
     def get_node(self, ID):
         """ Returns a node given an ID or None if no such node exists.
         """
+        node = super(Graph, self).get_node(ID)
+        if node is not None:
+            return node
+
         for graph in self.all_graphs:
             for each_node in graph.nodes:
                 if each_node.ID == ID:
@@ -906,134 +884,41 @@ class Graph(BaseGraph):
             return None
 
 
-    def write(self, path, prog=None, format=None):
-        """ Writes a graph to a file.
-
-            Given a filename 'path' it will open/create and truncate
-            such file and write on it a representation of the graph
-            defined by the dot object and in the format specified by
-            'format'.
-            The format 'raw' is used to dump the string representation
-            of the Dot object, without further processing.
-            The output can be processed by any of graphviz tools, defined
-            in 'prog', which defaults to 'dot'
-            Returns True or False according to the success of the write
-            operation.
-        """
-
-        if prog is None:
-            prog = self.program
-
-        if format is None:
-            format = self.format
-
-
-        dot_fd = None
-        try:
-            dot_fd = open( path, "wb" )
-#            dot_fd = file( path, "w+b" )
-            if format == 'raw':
-                dot_fd.write( self.to_string() )
-            else:
-                dot_fd.write( self.create( prog, format ) )
-        finally:
-            if dot_fd is not None:
-                dot_fd.close()
-
-        return True
-
-
-
-    def create(self, prog=None, format=None):
-        """ Creates and returns a representation of the graph using the
-            Graphviz layout program given by 'prog', according to the given
-            format.
-
-            Writes the graph to a temporary dot file and processes
-            it with the program given by 'prog' (which defaults to 'dot'),
-            reading the output and returning it as a string if the
-            operation is successful.
-            On failure None is returned.
-        """
-
-        if prog is None:
-            prog = self.program
-
-        if format is None:
-            format = self.format
-
-        # Make a temporary file ...
-        tmp_fd, tmp_name = tempfile.mkstemp()
-        os.close( tmp_fd )
-        # ... and write the graph to it.
-        self.write( tmp_name, format="raw" )
-
-        # Get the temporary file directory name.
-        tmp_dir = os.path.dirname( tmp_name )
-
-        # TODO: Shape image files (See Pydot).
-
-        # Process the file using the layout program, specifying the format.
-        p = subprocess.Popen(
-            ( self.programs[ prog ], '-T'+format, tmp_name ),
-            cwd=tmp_dir,
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-
-        stderr = p.stderr
-        stdout = p.stdout
-
-        # Make sense of the standard output form the process.
-        stdout_output = list()
-        while True:
-            data = stdout.read()
-            if not data:
-                break
-            stdout_output.append(data)
-        stdout.close()
-
-        if stdout_output:
-            stdout_output = ''.join(stdout_output)
-
-        # Similarly so for any standard error.
-        if not stderr.closed:
-            stderr_output = list()
-            while True:
-                data = stderr.read()
-                if not data:
-                    break
-                stderr_output.append(data)
-            stderr.close()
-
-            if stderr_output:
-                stderr_output = ''.join(stderr_output)
-
-        #pid, status = os.waitpid(p.pid, 0)
-        status = p.wait()
-
-        if status != 0 :
-            logger.error("Program terminated with status: %d. stderr " \
-                "follows: %s" % ( status, stderr_output ) )
-        elif stderr_output:
-            logger.error( "%s", stderr_output )
-
-        # TODO: Remove shape image files from the temporary directory.
-
-        # Remove the temporary file.
-        os.unlink(tmp_name)
-
-        return stdout_output
-
-
-    def arrange_all(self):
-        """ Sets for the _draw_ and _ldraw_ attributes for each of the graph
-            sub-elements by processing the xdot format of the graph.
-        """
-        xdot_data = self.create( format = "xdot" )
-
-        print "XDOT DATA:\n\n", xdot_data
-
-        parser = dot_parser.DotParser()
-        xdot_graph = parser.parse_dot_data( xdot_data )
+#    def write(self, path, prog=None, format=None):
+#        """ Writes a graph to a file.
+#
+#            Given a filename 'path' it will open/create and truncate
+#            such file and write on it a representation of the graph
+#            defined by the dot object and in the format specified by
+#            'format'.
+#            The format 'raw' is used to dump the string representation
+#            of the Dot object, without further processing.
+#            The output can be processed by any of graphviz tools, defined
+#            in 'prog', which defaults to 'dot'
+#            Returns True or False according to the success of the write
+#            operation.
+#        """
+#
+#        if prog is None:
+#            prog = self.program
+#
+#        if format is None:
+#            format = self.format
+#
+#
+#        dot_fd = None
+#        try:
+#            dot_fd = open( path, "wb" )
+##            dot_fd = file( path, "w+b" )
+#            if format == 'raw':
+#                dot_fd.write( self.to_string() )
+#            else:
+#                dot_fd.write( self.create( prog, format ) )
+#        finally:
+#            if dot_fd is not None:
+#                dot_fd.close()
+#
+#        return True
 
     #--------------------------------------------------------------------------
     #  Trait initialisers:
@@ -1055,19 +940,6 @@ class Graph(BaseGraph):
             return {}
         else:
             return progs
-
-
-    def _vp_default(self):
-        """ Trait initialiser.
-        """
-        vp = Viewport(component=self.component)
-        vp.enable_zoom=True
-
-        vp.view_position = [0,0]
-
-        vp.tools.append(ViewportPanTool(vp))
-
-        return vp
 
 
     def _epsilon_default(self):

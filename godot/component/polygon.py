@@ -98,8 +98,8 @@ class Polygon(Component):
 #            self._draw_bounds(gc)
             if len(self.points) >= 2:
                 # Set the drawing parameters.
-                gc.set_fill_color(self.pen.fill_colour_)
-                gc.set_stroke_color(self.pen.colour_)
+                gc.set_fill_color(self.pen.fill_color_)
+                gc.set_stroke_color(self.pen.color_)
                 gc.set_line_width(self.pen.line_width)
 
                 # Draw the path.

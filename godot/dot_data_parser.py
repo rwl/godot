@@ -32,6 +32,8 @@ from dot2tex.dotparsing \
     ADD_NODE_TO_GRAPH_EDGE, ADD_GRAPH_TO_GRAPH_EDGE, ADD_SUBGRAPH, \
     SET_DEF_NODE_ATTR, SET_DEF_EDGE_ATTR, SET_DEF_GRAPH_ATTR, SET_GRAPH_ATTR
 
+from enthought.traits.api import Float
+
 from graph import Graph
 from subgraph import Subgraph
 from cluster import Cluster
@@ -45,6 +47,20 @@ from edge import Edge
 class GodotDataParser(DotDataParser):
     """ Parses Graphviz dot data.
     """
+
+    def _proc_node_stmt(self, toks):
+        """ Return (ADD_NODE, node_name, options)
+        """
+        print "OPTIONS:", toks[1]
+        opts = toks[1]
+        # Coerce attribute types.
+        for key, value in opts.iteritems():
+            trait = Node("dummy").trait(key)
+            if trait.is_trait_type( Float ):
+                opts[key] = float( value )
+
+        return super(GodotDataParser, self)._proc_node_stmt(toks)
+
 
     def parse_dot_file(self, file_or_filename):
         """ Returns a graph given a file or a filename.
