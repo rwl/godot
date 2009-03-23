@@ -20,6 +20,13 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
+""" Defines traits used in more than on graph element.
+"""
+
+#------------------------------------------------------------------------------
+#  Imports:
+#------------------------------------------------------------------------------
+
 from enthought.traits.api import \
     HasTraits, Color, Str, Enum, Float, Font, Any, Bool, Int, File, Trait, \
     List, Tuple, ListStr, Property, Either, Regex
