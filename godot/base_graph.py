@@ -54,7 +54,7 @@ import godot
 from dot_writer \
     import write_dot_graph
 
-from util import Serializable
+#from util import Serializable
 
 FORMATS = ['dot', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dia', 'fig', 'gd',
            'gd2', 'gif', 'hpgl', 'imap', 'imap_np', 'ismap', 'jpe', 'jpeg',
@@ -62,11 +62,15 @@ FORMATS = ['dot', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dia', 'fig', 'gd',
            'png', 'ps', 'ps2', 'svg', 'svgz', 'vml', 'vmlz', 'vrml', 'vtx',
            'wbmp', 'xdot', 'xlib', 'bmp', 'eps', 'gtk', 'ico', 'tga', 'tiff']
 
+RENDERERS = ['cairo', 'gd']
+
+FORMATTERS = ['cairo', 'gd', 'gdk_pixbuf']
+
 #------------------------------------------------------------------------------
 #  "BaseGraph" class:
 #------------------------------------------------------------------------------
 
-class BaseGraph ( Serializable ):
+class BaseGraph ( HasTraits ):
     """ Defines a representation of a graph in Graphviz's dot language """
 
     #--------------------------------------------------------------------------
@@ -104,7 +108,7 @@ class BaseGraph ( Serializable ):
     default_graph = Instance(HasTraits)
 
     # Level of the graph in the subgraph hierarchy.
-    level = Int(0, desc="level in the subgraph hierarchy")
+#    level = Int(0, desc="level in the subgraph hierarchy")
 
     # Padding to use for pretty string output.
     padding = Str("    ", desc="padding for pretty printing")
@@ -196,53 +200,44 @@ class BaseGraph ( Serializable ):
         """ Returns a string representation of the graph in dot language. It
             will return the graph and all its subelements in string form.
         """
-        return write_dot_graph(self)
-#        s = ""
-#        padding = self.padding
-#        if len(self.allitems) > 0:
-#            grstr = "".join(
-#                ["%s%s" % (padding, n) for n in map(str, flatten(self.allitems))]
-#            )
-#            attrstr = ",".join(["%s=%s" % \
-#            (quote_if_necessary(key),quote_if_necessary(val)) \
-#                for key,val in self.attr.items()])
-#            if attrstr:
-#                attrstr = "%sgraph [%s];" % (padding,attrstr)
-#            if not isinstance(self,DotSubGraph):
-#                s = ""
-#                if self.strict:
-#                    s += 'strict '
-#                if self.directed:
-#                    s += "digraph"
-#                else:
-#                    s += "graph"
-#                return "%s %s{\n%s\n%s\n}" % (s,self.get_name(),grstr,attrstr)
-#            else:
-#                return "%s %s{\n%s\n%s\n%s}" % ('subgraph',self.get_name(),grstr,attrstr,padding)
-#
-#        subgraphstr = "\n".join(["%s%s" % (padding,n) for n in map(str,self.subgraphs)])
-#
-#        nodestr =  "".join(["%s%s" % (padding,n) for n in \
-#            map(str,self._nodes.itervalues())])
-#        edgestr =  "".join(["%s%s" % (padding,n) for n in \
-#            map(str,flatten(self.edges.itervalues()))])
-#
-#        attrstr = ",".join(["%s=%s" % \
-#            (quote_if_necessary(key),quote_if_necessary(val)) \
-#                for key,val in self.attr.items()])
-#        if attrstr:
-#            attrstr = "%sgraph [%s];" % (padding,attrstr)
-#        if not isinstance(self,DotSubGraph):
-#            s = ""
-#            if self.strict:
-#                s += 'strict '
-#            if self.directed:
-#                s += "digraph"
-#            else:
-#                s += "graph"
-#            return "%s %s{\n%s\n%s\n%s\n%s\n}" % (s,self.get_name(),subgraphstr,attrstr,nodestr,edgestr)
-#        else:
-#            return "%s %s{\n%s\n%s\n%s\n%s\n%s}" % ('subgraph',self.get_name(),subgraphstr,attrstr,nodestr,edgestr,padding)
+        s = ""
+        padding = self.padding
+        if self.ID:
+            s += "%s {\n" % self.ID
+        else:
+            s += "{\n"
+
+        # Traits to be included in string output have 'graphviz' metadata.
+        for trait_name, trait in self.traits(graphviz=True).iteritems():
+            # Get the value of the trait for comparison with the default.
+            value = getattr(self, trait_name)
+
+            # Only print attribute value pairs if not defaulted.
+            # FIXME: Alias/Synced traits default to None.
+            if ( value != trait.default ) and ( trait.default is not None ):
+                if isinstance( value, basestring ):
+                    # Add double quotes to the value if it is a string.
+                    valstr = '"%s"' % value
+                else:
+                    valstr = str(value)
+
+                s += "%s%s=%s;\n" % ( padding, trait_name, valstr )
+
+        def prepend_padding(s):
+            return "\n".join( [padding + line for line in s.splitlines()] )
+
+        for node in self.nodes:
+            s += "%s%s\n" % ( padding, str(node) )
+        for edge in self.edges:
+            s += "%s%s\n" % ( padding, str(edge) )
+        for subgraph in self.subgraphs:
+            s += prepend_padding( str( subgraph ) ) + "\n"
+        for cluster in self.clusters:
+            s += prepend_padding( str( cluster ) ) + "\n"
+
+        s += "}"
+
+        return s
 
     #--------------------------------------------------------------------------
     #  Trait initialisers:
@@ -500,8 +495,8 @@ class BaseGraph ( Serializable ):
 
         subgraph.default_node = self.default_node
         subgraph.default_edge = self.default_edge
-        subgraph.level = self.level + 1
-        subgraph.padding += self.padding
+#        subgraph.level = self.level + 1
+#        subgraph.padding += self.padding
 
         if isinstance(subgraph, godot.subgraph.Subgraph):
             self.subgraphs.append(subgraph)

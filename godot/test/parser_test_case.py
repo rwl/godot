@@ -45,14 +45,15 @@ class ParserTestCase(unittest.TestCase):
     """ Defines a test case for the Dot data parser.
     """
 
-    def test_parse_cluster(self):
-        """ Test parsing of a graph with clusters.
+    def test_parsing_cluster_graph(self):
+        """ Test parsing of a graph with nested clusters.
         """
         parser = GodotDataParser()
         graph = parser.parse_dot_file(CLUSTER_GRAPH)
 #        self.failUnless(graph.name == "testG")
 #        graph.configure_traits()
-        graph.save_to_file("/tmp/clust.dot")
+#        graph.save_to_file("/tmp/clust.dot")
+        print graph.clusters[0]
 
 
 #    def test_parse_colors(self):

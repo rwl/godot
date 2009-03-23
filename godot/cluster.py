@@ -124,7 +124,7 @@ class Cluster(BaseGraph):
     # If this effect is not desired, and you only want to set bits explicitly
     # assigned in drawing the graph, set <html:a rel="attr">bgcolor</html:a>="transparent".
     bgcolor = Color("white", desc="color used as the background for the "
-        "entire canvas", label="Background Color")
+        "entire canvas", label="Background Color", graphviz=True)
 
     # Basic drawing color for graphics, not text. For the latter, use the
     # <html:a rel="attr">fontcolor</html:a> attribute.
@@ -162,14 +162,15 @@ class Cluster(BaseGraph):
     # Note that a cluster inherits the root graph's attributes if defined.
     # Thus, if the root graph has defined a <html:a rel="attr">fillcolor</html:a>, this will override a
     # <html:a rel="attr">color</html:a> or <html:a rel="attr">bgcolor</html:a> attribute set for the cluster.
-    fillcolor = Color("grey", desc="fill color for background of a node")
+    fillcolor = Color("grey", desc="fill color for background of a node",
+        graphviz=True)
 
     # If true, the node size is specified by the values of the
     # <html:a rel="attr">width</html:a>
     # and <html:a rel="attr">height</html:a> attributes only
     # and is not expanded to contain the text label.
     fixedsize = Bool(False, desc="node size to be specified by 'width' and "
-        "'height'", label="Fixed size")
+        "'height'", label="Fixed size", graphviz=True)
 
     # Color used for text.
     fontcolor = fontcolor_trait
@@ -202,7 +203,8 @@ class Cluster(BaseGraph):
     # an ideal edge length (in inches), in that increasing K tends to increase
     # the distance between nodes. Note that the edge attribute len can be used
     # to override this value for adjacent nodes.
-    K = Float(0.3, desc="spring constant used in virtual physical model")
+    K = Float(0.3, desc="spring constant used in virtual physical model",
+        graphviz=True)
 
     # Text label attached to objects.
     # If a node's <html:a rel="attr">shape</html:a> is record, then the label can
@@ -217,7 +219,8 @@ class Cluster(BaseGraph):
     # the root graph sets <html:a rel="attr">labeljust</html:a> to <html:span class="val">l</html:span>, the subgraph inherits
     # this value.
     labeljust = Trait("c", {"Centre": "c", "Right": "r", "Left": "l"},
-        desc="justification for cluster labels", label="Label justification")
+        desc="justification for cluster labels", label="Label justification",
+        graphviz=True)
 
     # Top/bottom placement of graph and cluster labels.
     # If the attribute is <html:span class="val">t</html:span>, place label at the top;
@@ -229,7 +232,7 @@ class Cluster(BaseGraph):
     # this value.
     labelloc = Trait("b", {"Bottom": "b", "Top":"t"},
         desc="placement of graph and cluster labels",
-        label="Label location")
+        label="Label location", graphviz=True)
 
     # Label position, in points. The position indicates the center of the
     # label.
@@ -258,12 +261,13 @@ class Cluster(BaseGraph):
     # <html:a rel="attr">pencolor</html:a>, this will override a
 	# <html:a rel="attr">color</html:a> or <html:a rel="attr">bgcolor</html:a>
     # attribute set for the cluster.
-    pencolor = Color("grey", desc="color for the cluster bounding box")
+    pencolor = Color("grey", desc="color for the cluster bounding box",
+        graphviz=True)
 
     # Set style for node or edge. For cluster subgraph, if "filled", the
     # cluster box's background is filled.
 #    style = ListStr(desc="style for node")
-    style = Str(desc="style for node")
+    style = Str(desc="style for node", graphviz=True)
 
     # If the object has a URL, this attribute determines which window
     # of the browser is used for the URL.
@@ -330,6 +334,17 @@ class Cluster(BaseGraph):
         title="Cluster", id="godot.cluster", buttons=["OK", "Cancel", "Help"],
         resizable=True
     )
+
+    #--------------------------------------------------------------------------
+    #  "object" interface:
+    #--------------------------------------------------------------------------
+
+    def __str__(self):
+        """ Returns a string representation of the cluster in dot language.
+        """
+        s = "subgraph"
+
+        return "%s %s" % ( s, super(Cluster, self).__str__() )
 
     #--------------------------------------------------------------------------
     #  Trait initialisers:

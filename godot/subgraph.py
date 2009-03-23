@@ -112,7 +112,7 @@ class Subgraph(BaseGraph):
     # and rank="sink". (Note: the minimum rank is topmost or leftmost, and the
     # maximum rank is bottommost or rightmost.)
     rank = Enum("same", "min", "source", "max", "sink",
-        desc="rank constraints on the nodes in a subgraph")
+        desc="rank constraints on the nodes in a subgraph", graphviz=True)
 
     #--------------------------------------------------------------------------
     #  Views:
@@ -128,6 +128,17 @@ class Subgraph(BaseGraph):
         buttons=["OK", "Cancel", "Help"],
         resizable=True
     )
+
+    #--------------------------------------------------------------------------
+    #  "object" interface:
+    #--------------------------------------------------------------------------
+
+    def __str__(self):
+        """ Returns a string representation of the cluster in dot language.
+        """
+        s = "subgraph"
+
+        return "%s %s" % ( s, super(Subgraph, self).__str__() )
 
 #------------------------------------------------------------------------------
 #  Stand-alone call:
