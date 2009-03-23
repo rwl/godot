@@ -37,7 +37,7 @@ from cluster import Cluster
 from node import Node
 from edge import Edge
 
-from dot_parser import DotParser
-from xdot_attr_parser import XdotAttrParser
+from dot_data_parser import GodotDataParser
+from xdot_parser import XdotAttrParser
 
 # EOF -------------------------------------------------------------------------

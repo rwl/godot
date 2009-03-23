@@ -46,8 +46,7 @@ from enthought.enable.api import Canvas, Viewport, Container
 from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
 from enthought.enable.component_editor import ComponentEditor
 
-# FIXME: Remove Pydot dependency
-from pydot import find_graphviz
+from dot2tex.dotparsing import find_graphviz
 
 from common import \
     Alias, color_scheme_trait, rectangle_trait, fontcolor_trait, \
@@ -62,28 +61,11 @@ from godot.cluster import Cluster
 
 from graph_view import graph_view, tabbed_view
 
-import dot_parser
-
 #------------------------------------------------------------------------------
 #  Logging:
 #------------------------------------------------------------------------------
 
 logger = logging.getLogger(__name__)
-
-#GRAPH_ATTRIBUTES = ["Damping", "K", "URL", "bb", "bgcolor", "center",
-#    "charset", "clusterrank", "colorscheme", "comment", "compound",
-#    "concentrate", "defaultdist", "dim", "diredgeconstraints", "dpi",
-#    "epsilon", "esep", "fontcolor", "fontname", "fontnames", "fontpath",
-#    "fontsize", "label", "labeljust", "labelloc", "landscape", "layers",
-#    "layersep", "levelsgap", "lp", "margin", "maxiter", "mclimit", "mindist",
-#    "mode", "model", "mosek", "nodesep", "nojustify", "normalize", "nslimit",
-#    "nslimit1", "ordering", "outputorder", "overlap", "pack", "packmode",
-#    "pad", "page", "pagedir", "quantum", "rankdir", "ranksep",
-#    "ratio", "remincross", "resolution", "root", "rotate", "searchsize",
-#    "sep", "showboxes", "size", "splines", "start", "stylesheet", "target",
-#    "truecolor", "viewport", "voro_margin"]
-
-#MAPPED_GRAPH_ATTRIBUTES = ["labeljust", "labelloc", "showboxes"]
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -142,10 +124,11 @@ class Graph(BaseGraph):
     # If this effect is not desired, and you only want to set bits explicitly
     # assigned in drawing the graph, set <html:a rel="attr">bgcolor</html:a>="transparent".
     bgcolor = Color("white", desc="color used as the background for the "
-        "entire canvas", label="Background Color")
+        "entire canvas", label="Background Color", graphviz=True)
 
 	# If true, the drawing is centered in the output canvas.
-    center = Bool(False, desc="is drawing centered in the output canvas")
+    center = Bool(False, desc="is drawing centered in the output canvas",
+        graphviz=True)
 
     # Specifies the character encoding used when interpreting string input
     # as a text label. The default value is <html:span class="val">UTF-8</html:span>.
@@ -154,7 +137,7 @@ class Graph(BaseGraph):
     # <html:span class="val">Latin1</html:span>. The <html:a rel="attr">charset</html:a> attribute is case-insensitive.
     # Note that if the character encoding used in the input does not
     # match the <html:a rel="attr">charset</html:a> value, the resulting output may be very strange.
-    charset = Str("UTF-8", label="Character encoding")
+    charset = Str("UTF-8", label="Character encoding", graphviz=True)
 
     # Mode used for handling clusters. If <html:a rel="attr">clusterrank</html:a> is <html:span class="val">local</html:span>, a
     # subgraph whose name begins with "cluster" is given special treatment.
@@ -177,30 +160,31 @@ class Graph(BaseGraph):
     colorscheme = color_scheme_trait
 
 	# Comments are inserted into output. Device-dependent.
-    comment = Str(desc="comments are inserted into output")
+    comment = Str(desc="comments are inserted into output", graphviz=True)
 
 	# If <html:span class="val">true</html:span>, allow edges between clusters.
     # (See <html:a rel="attr">lhead</html:a> and <html:a rel="attr">ltail</html:a> below.)
-    compound = Bool(False, desc="edges allowed between clusters")
+    compound = Bool(False, desc="edges allowed between clusters",
+        graphviz=True)
 
 	# If <html:span class="val">true</html:span>, use edge concentrators.
-    concentrate = Bool(False, desc="edge concentrators")
+    concentrate = Bool(False, desc="edge concentrators", graphviz=True)
 
     # Factor damping force motions. On each iteration, a nodes movement
     # is limited to this factor of its potential motion. By being less than
     # 1.0, the system tends to "cool", thereby preventing cycling.
-    Damping = Float(0.99, desc="factor damping force motions")
+    Damping = Float(0.99, desc="factor damping force motions", graphviz=True)
 
     # This specifies the distance between nodes in separate connected
     # components. If set too small, connected components may overlap.
     # Only applicable if <html:a rel="attr">pack</html:a>=false.
     defaultdist = Float(desc="distance between nodes in separate connected "
-        "components", label="Default distance")
+        "components", label="Default distance", graphviz=True)
 
     # Set the number of dimensions used for the layout. The maximum value
     # allowed is 10.
     dim = Range(low=2, high=10, desc="number of dimensions for the layout",
-        label="Dimensions")
+        label="Dimensions", graphviz=True)
 
     # Only valid when mode="ipsep". If true, constraints are generated for each
     # edge in the largest (heuristic) directed acyclic subgraph such that the
@@ -208,7 +192,8 @@ class Graph(BaseGraph):
     # to those used with mode="hier". The main difference is that, in the
     # latter case, only these constraints are involved, so a faster solver can
     # be used.
-    diredgeconstraints = Enum(True, "heir", label="Edge constraints")
+    diredgeconstraints = Enum(True, "heir", label="Edge constraints",
+        graphviz=True)
 
     # This specifies the expected number of pixels per inch on a display device.
     # For bitmap output, this guarantees that text rendering will be
@@ -216,11 +201,11 @@ class Graph(BaseGraph):
     # it is used to guarantee that the dimensions in the output correspond to
     # the correct number of points or inches.
     dpi = Float(96.0, desc="expected number of pixels per inch on a display",
-        label="DPI")
+        label="DPI", graphviz=True)
 
     # Terminating condition. If the length squared of all energy gradients are
     # &lt; <html:a rel="attr">epsilon</html:a>, the algorithm stops.
-    epsilon = Float(0.0001, desc="terminating condition")
+    epsilon = Float(0.0001, desc="terminating condition", graphviz=True)
 
     # Fraction to increase polygons (multiply
     # coordinates by 1 + esep) for purposes of spline edge routing.
@@ -228,7 +213,7 @@ class Graph(BaseGraph):
     # <html:a rel="attr">sep</html:a>.
     esep = Int(3, desc="Fraction to increase polygons (multiply coordinates "
         "by 1 + esep) for purposes of spline edge routing",
-        label="Edge separation")
+        label="Edge separation", graphviz=True)
 
 	# Color used for text.
     fontcolor = fontcolor_trait
@@ -267,7 +252,8 @@ class Graph(BaseGraph):
     # <html:code>Nimbus Roman No9 L</html:code>. These last two options are useful
     # with SVG viewers that support these richer fontname spaces.
     fontnames = Enum("svg", "ps", "gd", label="Font names",
-        desc="how basic fontnames are represented in SVG output")
+        desc="how basic fontnames are represented in SVG output",
+        graphviz=True)
 
     # Directory list used by libgd to search for bitmap fonts if Graphviz
     # was not built with the fontconfig library.
@@ -276,7 +262,7 @@ class Graph(BaseGraph):
     # If that is not set, <html:code>GDFONTPATH</html:code> is checked.
     # If not set, libgd uses its compiled-in font path.
     # Note that fontpath is an attribute of the root graph.
-    fontpath = List(Directory, label="Font path")
+    fontpath = List(Directory, label="Font path", graphviz=True)
 
 	# Font size, in <html:a rel="note">points</html:a>, used for text.
     fontsize = fontsize_trait
@@ -285,7 +271,8 @@ class Graph(BaseGraph):
     # an ideal edge length (in inches), in that increasing K tends to increase
     # the distance between nodes. Note that the edge attribute len can be used
     # to override this value for adjacent nodes.
-    K = Float(0.3, desc="spring constant used in virtual physical model")
+    K = Float(0.3, desc="spring constant used in virtual physical model",
+        graphviz=True)
 
     # Text label attached to objects.
     # If a node's <html:a rel="attr">shape</html:a> is record, then the label can
@@ -300,7 +287,8 @@ class Graph(BaseGraph):
     # the root graph sets <html:a rel="attr">labeljust</html:a> to <html:span class="val">l</html:span>, the subgraph inherits
     # this value.
     labeljust = Trait("c", {"Centre": "c", "Right": "r", "Left": "l"},
-        desc="justification for cluster labels", label="Label justification")
+        desc="justification for cluster labels", label="Label justification",
+        graphviz=True)
 
     # Top/bottom placement of graph and cluster labels.
     # If the attribute is <html:span class="val">t</html:span>, place label at the top;
@@ -312,23 +300,24 @@ class Graph(BaseGraph):
     # this value.
     labelloc = Trait("b", {"Bottom": "b", "Top":"t"},
         desc="placement of graph and cluster labels",
-        label="Label location")
+        label="Label location", graphviz=True)
 
     # If true, the graph is rendered in landscape mode. Synonymous with
     # <html:code><html:a rel="attr">rotate</html:a>=90</html:code> or <html:code>
     # <html:a rel="attr">orientation</html:a>=landscape</html:code>.
-    landscape = Bool(False, desc="rendering in landscape mode")
+    landscape = Bool(False, desc="rendering in landscape mode", graphviz=True)
 
     # Specifies a linearly ordered list of layer names attached to the graph
     # The graph is then output in separate layers. Only those components
     # belonging to the current output layer appear. For more information,
     # see the page <html:a href="http://www.graphviz.org/Documentation/html/layers/">How to use drawing layers (overlays)</html:a>.
-    layers = Str(desc="a linearly ordered list of layer names")
+    layers = Str(desc="a linearly ordered list of layer names",
+        graphviz=True)
 
     # Specifies the separator characters used to split the
     # <html:a rel="attr">layers </html:a>attribute into a list of layer names.
     layersep = Enum(":\t", "\t", " ", label="Layer separation",
-        desc="separator characters used to split layer names")
+        desc="separator characters used to split layer names", graphviz=True)
 
     # Specifies strictness of level constraints in neato
     # when <html:code><html:a rel="attr">mode</html:a>="ipsep" or "hier"</html:code>.
@@ -336,7 +325,7 @@ class Graph(BaseGraph):
     # separation between levels. On the other hand, negative values will relax
     # the constraints by allowing some overlap between the levels.
     levelsgap = Float(0.0, desc="strictness of level constraints in neato",
-        label="Levels gap")
+        label="Levels gap", graphviz=True)
 
     # Label position, in points. The position indicates the center of the
     # label.
@@ -357,7 +346,7 @@ class Graph(BaseGraph):
 
     # Sets the number of iterations used.
     maxiter = Int(200, desc="number of iterations used",
-        label="Maximum iterations")
+        label="Maximum iterations", graphviz=True)
 
     # Multiplicative scale factor used to alter the MinQuit (default = 8)
     # and MaxIter (default = 24) parameters used during crossing
@@ -366,11 +355,12 @@ class Graph(BaseGraph):
     # maximum number of iterations in each pass.
     mclimit = Float(1.0, desc="Multiplicative scale factor used to alter the "
         "MinQuit (default = 8) and MaxIter (default = 24) parameters used "
-        "during crossing minimization", label="Multiplicative scale factor")
+        "during crossing minimization", label="Multiplicative scale factor",
+        graphviz=True)
 
 	# Specifies the minimum separation between all nodes.
     mindist = Float(1.0, desc="minimum separation between all nodes",
-        label="Minimum separation")
+        label="Minimum separation", graphviz=True)
 
     # Technique for optimizing the layout. If <html:a rel="attr">mode</html:a> is <html:span class="val">major</html:span>,
     # neato uses stress majorization. If <html:a rel="attr">mode</html:a> is <html:span class="val">KK</html:span>,
@@ -384,7 +374,7 @@ class Graph(BaseGraph):
     # allows the graph to specify minimum vertical and horizontal distances
     # between nodes. (See the <html:a rel="attr">sep</html:a> attribute.)
     mode = Enum("major", "KK", "heir", "ipsep",
-        desc="Technique for optimizing the layout")
+        desc="Technique for optimizing the layout", graphviz=True)
 
     # This value specifies how the distance matrix is computed for the input
     # graph. The distance matrix specifies the ideal distance between every
@@ -399,15 +389,17 @@ class Graph(BaseGraph):
     # of the end points, and then calculates the shortest paths. This helps
     # to separate nodes with high degree.
     model = Enum("shortpath", "circuit", "subset",
-        desc="how the distance matrix is computed for the input graph")
+        desc="how the distance matrix is computed for the input graph",
+        graphviz=True)
 
     # If Graphviz is built with MOSEK defined, mode=ipsep and mosek=true,
     # the Mosek software (www.mosek.com) is use to solve the ipsep constraints.
-    mosek = Bool(False, desc="solve the ipsep constraints with MOSEK")
+    mosek = Bool(False, desc="solve the ipsep constraints with MOSEK",
+        graphviz=True)
 
 	# Minimum space between two adjacent nodes in the same rank, in inches.
     nodesep = Float(0.25, desc="minimum space between two adjacent nodes in "
-        "the same rank", label="Node separation")
+        "the same rank", label="Node separation", graphviz=True)
 
     # By default, the justification of multi-line labels is done within the
     # largest context that makes sense. Thus, in the label of a polygonal node,
@@ -426,7 +418,7 @@ class Graph(BaseGraph):
     # layout so that the first edge is horizontal.
     normalize = Bool(False, desc="If set, normalize coordinates of final "
         "layout so that the first point is at the origin, and then rotate the "
-        "layout so that the first edge is horizontal")
+        "layout so that the first edge is horizontal", graphviz=True)
 
     # Used to set number of iterations in
     # network simplex applications, used in
@@ -434,14 +426,14 @@ class Graph(BaseGraph):
     # If defined, # iterations =  <html:a rel="attr">nslimit</html:a> * # nodes;
     # otherwise,  # iterations = MAXINT.
     nslimit = Float(desc="iterations in network simplex applications",
-        label="x-coordinate limit")
+        label="x-coordinate limit", graphviz=True)
 
     # Used to set number of iterations in
     # network simplex applications, used for ranking nodes.
     # If defined, # iterations =  <html:a rel="attr">nslimit1</html:a> * # nodes;
     # otherwise,  # iterations = MAXINT.
     nslimit1 = Float(desc="iterations in network simplex applications",
-        label="Ranking limit")
+        label="Ranking limit", graphviz=True)
 
     # If "out" for a graph G, and n is a node in G, then edges n-&gt;* appear
     # left-to-right in the same order in which they are defined.
@@ -451,7 +443,8 @@ class Graph(BaseGraph):
     ordering = Enum("out", "in", desc="If 'out' for a graph G, and n is a "
         "node in G, then edges n->* appear left-to-right in the same order in "
         "which they are defined. If 'in', the edges *->n appear left-to-right "
-        "in the same order in which they are defined for all nodes n.")
+        "in the same order in which they are defined for all nodes n.",
+        graphviz=True)
 
     # These specify the order in which nodes and edges are drawn in concrete
     # output. The default "breadthfirst" is the simplest, but when the graph
@@ -464,7 +457,8 @@ class Graph(BaseGraph):
     # even if the resulting drawing is ambiguous. This can be achieved by
     # choosing "edgesfirst".
     outputorder = Enum("breadthfirst", "nodesfirst", "edgesfirst",
-        desc="order in which nodes and edges are drawn", label="Output order")
+        desc="order in which nodes and edges are drawn", label="Output order",
+        graphviz=True)
 
     # Determines if and how node overlaps should be removed. Nodes are first
     # enlarged using the <html:a rel="attr">sep</html:a> attribute.
@@ -520,7 +514,7 @@ class Graph(BaseGraph):
     # <html:b>NOTE</html:b>The methods <html:span class="val">orthoxy</html:span> and <html:span class="val">orthoyx</html:span> are still evolving. The semantics of these may change, or these methods may disappear altogether.
     overlap = Enum("True", "False", "scale", "scalexy", "prism", "compress",
         "vpsc", "ipsep", desc="determines if and how node overlaps should be "
-        "removed")
+        "removed", graphviz=True)
 
     # This is true if the value of pack is "true" or a non-negative integer.
     # If true, each connected component of the graph is laid out separately,
@@ -532,7 +526,7 @@ class Graph(BaseGraph):
     #
     # For layouts which always do packing, such a twopi, the pack attribute is
     # just used to set the margin.
-    pack = Bool #Either(
+    pack = Bool(graphviz=True) #Either(
 #        Bool, Int, desc="If true, each connected component of the graph is "
 #        "laid out separately, and then the graphs are packed tightly"
 #    )
@@ -555,7 +549,7 @@ class Graph(BaseGraph):
     # support clusters, so a value of "clust" will have the same effect as the
     # default "node" value.
     packmode = Enum("node", "cluster", "graph", label="Pack mode",
-        desc="granularity and method used for packing")
+        desc="granularity and method used for packing", graphviz=True)
 
     # The pad attribute specifies how much, in inches, to extend the
     # drawing area around the minimal area needed to draw the graph.
@@ -567,7 +561,7 @@ class Graph(BaseGraph):
     # a background color is used, to avoid having nodes and edges abutting
     # the boundary of the drawn region.
     pad = Float(0.0555, desc="how much to extend the drawing area around the "
-        "minimal area needed to draw the graph")
+        "minimal area needed to draw the graph", graphviz=True)
 
     # Width and height of output pages, in inches. If this is set and is
     # smaller than the size of the layout, a rectangular array of pages of the
@@ -586,18 +580,18 @@ class Graph(BaseGraph):
     pagedir = Enum("BL", "BR", "TL", "TR", "RB", "RT", "LB", "LT",
         desc="If the page attribute is set and applicable, this attribute "
         "specifies the order in which the pages are emitted",
-        label="Page direction")
+        label="Page direction", graphviz=True)
 
     # If <html:a rel="attr">quantum</html:a> &gt; 0.0, node label dimensions
     # will be rounded to integral multiples of the quantum.
     quantum = Float(0.0, desc="If quantum > 0.0, node label dimensions will "
-        "be rounded to integral multiples of the quantum.")
+        "be rounded to integral multiples of the quantum.", graphviz=True)
 
     # Sets direction of graph layout. For example, if <html:a rel="attr">rankdir</html:a>="LR",
     # and barring cycles, an edge <html:code>T -&gt; H;</html:code> will go
     # from left to right. By default, graphs are laid out from top to bottom.
     rankdir = Enum("TB", "LR", "BT", "RL", desc="direction of graph layout",
-        label="Rank direction")
+        label="Rank direction", graphviz=True)
 
     # In dot, this gives the desired rank separation, in inches. This is
     # the minimum vertical distance between the bottom of the nodes in one
@@ -608,7 +602,7 @@ class Graph(BaseGraph):
     # In twopi, specifies radial separation of concentric circles.
     ranksep = Float(0.5, desc="In dot, this gives the desired rank "
         "separation.  In twopi, specifies radial separation of concentric "
-        "circles", label="Rank separation")
+        "circles", label="Rank separation", graphviz=True)
 
     # Sets the aspect ratio (drawing height/drawing width) for the drawing.
     # Note that this is adjusted before the size attribute constraints are
@@ -643,15 +637,18 @@ class Graph(BaseGraph):
     # size. This feature only works in dot.
 #    ratio = Either(Float, Enum("fill", "compress", "expand", "auto"),
     ratio = Enum("fill", "compress", "expand", "auto",
-        desc="aspect ratio (drawing height/drawing width) for the drawing")
+        desc="aspect ratio (drawing height/drawing width) for the drawing",
+        graphviz=True)
 
     # If true and there are multiple clusters, run cross minimization a second
     # time.
     remincross = Bool(False, desc="If true and there are multiple clusters, "
-        "run cross minimization a second", label="Re-cross minimization")
+        "run cross minimization a second", label="Re-cross minimization",
+        graphviz=True)
 
 	# This is a synonym for the <html:a rel="attr">dpi</html:a> attribute.
-    resolution = Alias("dpi", desc="a synonym for the dpi attribute")
+    resolution = Alias("dpi", desc="a synonym for the dpi attribute",
+        graphviz=True)
 
     # This specifies nodes to be used as the center of the
     # layout and the root of the generated spanning tree. As a graph attribute,
@@ -664,13 +661,13 @@ class Graph(BaseGraph):
     root = root_trait
 
 	# If 90, set drawing orientation to landscape.
-    rotate = Range(0, 360, desc="drawing orientation")
+    rotate = Range(0, 360, desc="drawing orientation", graphviz=True)
 
     # During network simplex, maximum number of edges with negative cut values
     # to search when looking for one with minimum cut value.
     searchsize = Int(30, desc="maximum number of edges with negative cut "
         "values to search when looking for one with minimum cut value",
-        label="Search size")
+        label="Search size", graphviz=True)
 
     # Fraction to increase polygons (multiply
     # coordinates by 1 + sep) for purposes of determining overlap. Guarantees
@@ -684,7 +681,8 @@ class Graph(BaseGraph):
     # In this case, if <html:a rel="attr">sep</html:a> is a pointf, the x and y separations can be
     # specified separately.
     sep = Int(4, desc="Fraction to increase polygons (multiply coordinates by "
-        "1 + sep) for purposes of determining overlap", label="Separation")
+        "1 + sep) for purposes of determining overlap", label="Separation",
+        graphviz=True)
 
 	# Print guide boxes in PostScript at the beginning of
 	# routesplines if 1, or at the end if 2. (Debugging)
@@ -721,7 +719,7 @@ class Graph(BaseGraph):
     # If fdp is used for layout and <html:tt>splines="compound"</html:tt>, then the edges are
     # drawn to avoid clusters as well as nodes.
     splines = Enum("True", "False", "",
-        desc="how, and if, edges are represented")
+        desc="how, and if, edges are represented", graphviz=True)
 
     # Parameter used to determine the initial layout of nodes. If unset, the
     # nodes are randomly placed in a unit square with
@@ -751,7 +749,7 @@ class Graph(BaseGraph):
 
 	# A URL or pathname specifying an XML style sheet, used in SVG output.
     stylesheet = Str(desc="URL or pathname specifying an XML style sheet",
-        label="Style sheet")
+        label="Style sheet", graphviz=True)
 
     # If the object has a URL, this attribute determines which window
     # of the browser is used for the URL.
@@ -775,7 +773,8 @@ class Graph(BaseGraph):
     # a color palette, font
     # antialiasing can show up as a fuzzy white area around characters.
     # Using <html:a rel="attr">truecolor</html:a>=true avoids this problem.
-    truecolor = Bool(True)
+    truecolor = Bool(True, desc="bitmap rendering relies on a truecolor color "
+        "model or uses a color palette", graphviz=True)
 
     # Hyperlinks incorporated into device-dependent output.
     # At present, used in ps2, cmap, i*map and svg formats.
@@ -802,7 +801,7 @@ class Graph(BaseGraph):
     # edge. Also note that, if active areas of two edges overlap, it is unspecified
     # which area dominates.
     URL = Str(desc="hyperlinks incorporated into device-dependent output",
-        label="URL")
+        label="URL", graphviz=True)
 
     # Clipping window on final drawing.
     #
@@ -822,7 +821,7 @@ class Graph(BaseGraph):
     # Sample values: 50,50,.5,'2.8 BSD' or 100,100,2,450,300. The first will
     # take the 100x100 point square centered on the node 2.8 BSD and scale it
     # down by 0.5, yielding a 50x50 point final image.
-    viewport = Tuple(Float, Float, Float, Float, Float)
+    viewport = Tuple(Float, Float, Float, Float, Float, graphviz=True)
 #    Either(
 #        Tuple(Float, Float, Float, Float, Float),
 #        Tuple(Float, Float, Float, Str),
@@ -831,7 +830,7 @@ class Graph(BaseGraph):
 
     voro_margin = Float(0.05, desc="Factor to scale up drawing to allow "
         "margin for expansion in Voronoi technique. dim' = (1+2*margin)*dim.",
-        label="Voronoi margin")
+        label="Voronoi margin", graphviz=True)
 
 
 #    def _defaultdist_default(self):
@@ -864,6 +863,22 @@ class Graph(BaseGraph):
         # tail_node instances exist in the graph or any subgraphs.
         self.on_trait_change(self._on_edges, "subgraphs*.edges")
         self.on_trait_change(self._on_edges, "subgraphs*.edges_items")
+
+
+    def __str__(self):
+        """ Returns a string representation of the graph in dot language. It
+            will return the graph and all its subelements in string form.
+        """
+        s = ""
+        if self.strict:
+            s += "strict "
+
+        if self.directed:
+            s += "digraph"
+        else:
+            s += "graph"
+
+        return "%s %s" % ( s, super(Graph, self).__str__() )
 
     #--------------------------------------------------------------------------
     #  Public interface:

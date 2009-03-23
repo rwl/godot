@@ -34,6 +34,36 @@ from enthought.traits.api import \
 from enthought.enable.colors import ColorTrait
 
 #------------------------------------------------------------------------------
+#  Syntactically concise alias trait:
+#------------------------------------------------------------------------------
+
+def Alias(name, **metadata):
+    """ Syntactically concise alias trait but creates a pair of lambda
+    functions for every alias you declare.
+
+    class MyClass(HasTraits):
+        line_width = Float(3.0)
+        thickness = Alias("line_width")
+
+    """
+
+    return Property(lambda obj: getattr(obj, name),
+                    lambda obj, val: setattr(obj, name, val),
+                    **metadata)
+
+#------------------------------------------------------------------------------
+#  Syntactically verbose alias trait:
+#------------------------------------------------------------------------------
+
+def _get_synced ( self, name ):
+    return getattr( self, self.trait( name ).sync_to )
+
+def _set_synced ( self, name, value ):
+    setattr( self, self.trait( name ).sync_to, value )
+
+Synced = Property( _get_synced, _set_synced )
+
+#------------------------------------------------------------------------------
 #  Trait definitions
 #------------------------------------------------------------------------------
 
@@ -50,7 +80,7 @@ dquote   = '\" '
 html     = "<...>"
 id_trait = Regex(regex=alphanum+"|"+number+"|"+dquote+"|"+html)
 
-pointf_trait = Tuple(Float, Float, desc="the point (x,y)")
+pointf_trait = Tuple(Float, Float, desc="the point (x,y)", graphviz=True)
 
 point_trait = pointf_trait #Either(
 #    pointf_trait, Tuple(Float, Float, Float, desc="the point (x,y,z)")
@@ -62,54 +92,25 @@ color_schemes = ["X11", "Accent", "Blues", "BRBG", "BUGN", "BUPU", "Dark",
     "RDPU", "RDYLBU", "RDYLGN", "Reds", "Set", "Spectral", "YLGN",
     "YLGNBU", "YLORBR", "YLORRD"]
 
-color_scheme_trait = Enum(
-    color_schemes, desc="a color scheme namespace",
-    label="Color scheme"
-)
+color_scheme_trait = Enum(color_schemes, desc="a color scheme namespace",
+    label="Color scheme", graphviz=True)
 
-color_trait = Color("black", desc="drawing color for graphics, not text")
-
-def Alias(name, desc=""):
-    """ Syntactically concise alias trait but creates a pair of lambda
-    functions for every alias you declare.
-
-    class MyClass(HasTraits):
-        line_width = Float(3.0)
-        thickness = Alias("line_width")
-
-    """
-
-    return Property(
-        lambda obj: getattr(obj, name),
-        lambda obj, val: setattr(obj, name, val),
-        desc=desc
-    )
-
-# Define a 'Synced' property:
-def _get_synced ( self, name ):
-    return getattr( self, self.trait( name ).sync_to )
-
-def _set_synced ( self, name, value ):
-    setattr( self, self.trait( name ).sync_to, value )
-
-Synced = Property( _get_synced, _set_synced )
+color_trait = Color("black", desc="drawing color for graphics, not text",
+    graphviz=True)
 
 
-comment_trait = Str(desc="comments inserted into output")
+comment_trait = Str(desc="comments inserted into output", graphviz=True)
 
-fontcolor_trait = Color(
-    "black", desc="color used for text", label="Font color"
-)
+fontcolor_trait = Color("black", desc="color used for text",
+    label="Font color", graphviz=True)
 
-fontname_trait = Font(
-    "Times-Roman", desc="font used for text", label="Font name"
-)
+fontname_trait = Font("Times-Roman", desc="font used for text",
+    label="Font name", graphviz=True)
 
-fontsize_trait = Float(
-    14.0, desc="size, in points, used for text", label="Font size"
-)
+fontsize_trait = Float(14.0, desc="size, in points, used for text",
+    label="Font size", graphviz=True)
 
-label_trait = Str(desc="text label attached to objects")
+label_trait = Str(desc="text label attached to objects", graphviz=True)
 
 # FIXME: Implement layerRange
 #
@@ -117,22 +118,21 @@ label_trait = Str(desc="text label attached to objects")
 #     where layerId = "all", a decimal integer or a layer name. (An integer i
 #     corresponds to layer i.) The string s consists of 1 or more separator
 #     characters specified by the layersep attribute.
-layer_trait = Str(desc="layers in which the node or edge is present")
+layer_trait = Str(desc="layers in which the node or edge is present",
+    graphviz=True)
 
 #margin_trait = Either(
 #    Float, pointf_trait, desc="x and y margins of canvas or node label"
 #)
-margin_trait = Float(desc="x and y margins of canvas or node label")
+margin_trait = Float(desc="x and y margins of canvas or node label",
+    graphviz=True)
 
-nojustify_trait = Bool(
-    False, label="No justify",
-    desc="multi-line labels will be justified in the context of itself"
-)
+nojustify_trait = Bool(False, label="No justify",
+    desc="multi-line labels will be justified in the context of itself",
+    graphviz=True)
 
-peripheries_trait = Int(
-    desc="number of peripheries used in polygonal shapes and cluster "
-    "boundaries"
-)
+peripheries_trait = Int(desc="number of peripheries used in polygonal shapes "
+    "and cluster boundaries", graphviz=True)
 
 # FIXME: Implement splineType
 #
@@ -146,24 +146,20 @@ peripheries_trait = Int(
 # correspond to the control points of a B-spline from p1 to pn. If startp is
 # given, it touches one node of the edge, and the arrowhead goes from p1 to
 # startp. If startp is not given, p1 touches a node. Similarly for pn and endp.
-pos_trait = Str(desc="position of node, or spline control points")
-#pos_trait = Float(desc="position of node, or spline control points")
+pos_trait = Tuple(Float, Float,
+    desc="position of node, or spline control points", graphviz=True)
 
-rectangle_trait = Tuple(
-    Float, Float, Float, Float,
+rectangle_trait = Tuple(Float, Float, Float, Float,
     desc="The rect llx,lly,urx,ury gives the coordinates, in points, of the "
-    "lower-left corner (llx,lly) and the upper-right corner (urx,ury)."
-)
+    "lower-left corner (llx,lly) and the upper-right corner (urx,ury).",
+    graphviz=True)
 
-root_trait = Str(
-    desc="nodes to be used as the center of the layout and the root of "
-    "the generated spanning tree"
-)
+root_trait = Str(desc="nodes to be used as the center of the layout and the "
+    "root of the generated spanning tree")
 
-showboxes_trait = Trait(
-    "beginning", {"beginning": 1, "end": 2}, label="Show boxes",
-    desc="guide boxes in PostScript output"
-)
+showboxes_trait = Trait("beginning", {"beginning": 1, "end": 2},
+    label="Show boxes", desc="guide boxes in PostScript output",
+    graphviz=True)
 
 # Additional styles are available in device-dependent form. Style lists are
 # passed to device drivers, which can use this to generate appropriate output.
@@ -171,14 +167,13 @@ edge_styles = ["dashed", "dotted", "solid", "invis", "bold"]
 cluster_styles = ["filled", "rounded"]
 node_styles = edge_styles + cluster_styles + ["diagonals"]
 
-target_trait = Str(
-    desc="if the object has a URL, this attribute determines which window "
-    "of the browser is used"
-)
+target_trait = Str(desc="if the object has a URL, this attribute determines "
+    "which window of the browser is used", graphviz=True)
 
-tooltip_trait = Str(desc="tooltip annotation attached to the node or edge")
+tooltip_trait = Str(desc="tooltip annotation attached to the node or edge",
+    graphviz=True)
 
-url_trait = Str(desc="hyperlinks incorporated into device-dependent output")
-
+url_trait = Str(desc="hyperlinks incorporated into device-dependent output",
+    graphviz=True)
 
 # EOF -------------------------------------------------------------------------

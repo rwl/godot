@@ -52,7 +52,8 @@ class ParserTestCase(unittest.TestCase):
         graph = parser.parse_dot_file(CLUSTER_GRAPH)
 #        self.failUnless(graph.name == "testG")
 #        graph.configure_traits()
-        graph.save_to_file("/tmp/clust.dot")
+#        graph.save_to_file("/tmp/clust.dot")
+        print graph.clusters[0]
 
 
 #    def test_parse_colors(self):

@@ -51,7 +51,7 @@ from common import \
     showboxes_trait, target_trait, tooltip_trait, url_trait, pointf_trait, \
     color_trait, Alias
 
-from xdot_attr_parser import XdotAttrParser
+from xdot_parser import XdotAttrParser
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -65,17 +65,6 @@ node_shapes = ["rect", "rectangle", "box", "ellipse", "circle", "invtriangle",
                                                     "Mcircle"]
 
 shape_trait = Enum(node_shapes, desc="node shape", label="Node shape")
-
-#------------------------------------------------------------------------------
-#  Constants:
-#------------------------------------------------------------------------------
-
-#node_attrs = ['URL', 'color', 'colorscheme', 'comment', 'distortion',
-#    'fillcolor', 'fixedsize', 'fontcolor', 'fontname', 'fontsize', 'group',
-#    'height', 'image', 'imagescale', 'label', 'label_drawing', 'layer',
-#    'margin', 'nojustify', 'orientation', 'peripheries', 'pin', 'pos', 'rects',
-#    'regular', 'root', 'samplepoints', 'shape', 'shapefile', 'showboxes',
-#    'sides', 'skew', 'style', 'target', 'tooltip', 'vertices', 'width', 'z']
 
 #------------------------------------------------------------------------------
 #  "Node" class:
@@ -146,7 +135,8 @@ class Node(HasTraits):
 
     # Distortion factor for <html:a rel="attr">shape</html:a>=polygon.
     # Positive values cause top part to be larger than bottom; negative values do the opposite.
-    distortion = Float(0.0, desc="distortion factor for polygons")
+    distortion = Float(0.0, desc="distortion factor for polygons",
+        graphviz=True)
 
     # Color used to fill the background of a node or cluster
     # assuming <html:a rel="attr">style</html:a>=filled.
@@ -161,14 +151,15 @@ class Node(HasTraits):
     # Note that a cluster inherits the root graph's attributes if defined.
     # Thus, if the root graph has defined a <html:a rel="attr">fillcolor</html:a>, this will override a
     # <html:a rel="attr">color</html:a> or <html:a rel="attr">bgcolor</html:a> attribute set for the cluster.
-    fillcolor = Color("grey", desc="fill color for background of a node")
+    fillcolor = Color("grey", desc="fill color for background of a node",
+        graphviz=True)
 
     # If true, the node size is specified by the values of the
     # <html:a rel="attr">width</html:a>
     # and <html:a rel="attr">height</html:a> attributes only
     # and is not expanded to contain the text label.
     fixedsize = Bool(False, desc="node size to be specified by 'width' and "
-        "'height'", label="Fixed size")
+        "'height'", label="Fixed size", graphviz=True)
 
 	# Color used for text.
     fontcolor = fontcolor_trait
@@ -202,7 +193,7 @@ class Node(HasTraits):
     # the edges straight.
     group = Str("", desc="If the end points of an edge belong to the same "
         "group, i.e., have the same group attribute, parameters are set to "
-        "avoid crossings and keep the edges straight.")
+        "avoid crossings and keep the edges straight.", graphviz=True)
 
     # Height of node, in inches. This is taken as the initial, minimum height
     # of the node. If fixedsize is true, this will be the final height of the
@@ -210,7 +201,7 @@ class Node(HasTraits):
     # node's height will be increased to contain the label. Note also that, if
     # the output format is dot, the value given to height will be the final
     # value.
-    height = Float(0.5, desc="node height, in inches")
+    height = Float(0.5, desc="node height, in inches", graphviz=True)
 
     # Gives the name of a file containing an image to be displayed inside
     # a node. The image file must be in one of the recognized formats,
@@ -222,7 +213,7 @@ class Node(HasTraits):
     # content rather than the entire node. In particular, an image can
     # be contained in a node of any shape, not just a rectangle.
     image = Str("", desc="file name containing an image to be displayed "
-        "inside a node")
+        "inside a node", graphviz=True)
 
     # Attribute controlling how an image fills its
     # containing node. In general, the image is given its natural size,
@@ -253,7 +244,7 @@ class Node(HasTraits):
     # expansion, if <html:code>imagescale=true</html:code>, width and height are
     # scaled uniformly.
     imagescale = Str("false", desc="how an image fills its containing node",
-        label="Image scale")
+        label="Image scale", graphviz=True)
 
     # Text label attached to objects.
     # If a node's <html:a rel="attr">shape</html:a> is record, then the label can
@@ -281,7 +272,8 @@ class Node(HasTraits):
 
     # Angle, in degrees, used to rotate polygon node shapes. For any number of
     # polygon sides, 0 degrees rotation results in a flat base.
-    orientation = Range(0.0, 360.0, desc="polygon rotation angle")
+    orientation = Range(0.0, 360.0, desc="polygon rotation angle",
+        graphviz=True)
 
     # Set number of peripheries used in polygonal shapes and cluster
     # boundaries. Note that
@@ -304,7 +296,7 @@ class Node(HasTraits):
     # difference between the old and new coordinates will give the translation,
     # which can then be subtracted from all of the appropriate coordinates.
     pin = Bool(False, desc="neato to prevent the node from moving from the "
-        "input position")
+        "input position", graphviz=True)
 
     # Position of node, or spline control points.
     # For nodes, the position indicates the center of the node.
@@ -326,7 +318,7 @@ class Node(HasTraits):
     rects = rectangle_trait
 
     # If true, force polygon to be regular.
-    regular = Bool(False, desc="polygon to be regular")
+    regular = Bool(False, desc="polygon to be regular", graphviz=True)
 
 
     # This specifies nodes to be used as the center of the
@@ -346,7 +338,7 @@ class Node(HasTraits):
     # It plays the same role in neato, when adjusting the layout to avoid
     # overlapping nodes, and in image maps.
     samplepoints = Int(8, desc="number of points used for a node whose shape "
-        "is a circle or ellipse", label="Sample points")
+        "is a circle or ellipse", label="Sample points", graphviz=True)
 
 	# Set polygon to be regular.
     shape = shape_trait#(desc="polygon to be regular")
@@ -357,23 +349,23 @@ class Node(HasTraits):
     # as well as the precise semantics of how the file is used depends on the
     # output format.
     shapefile = File(desc="file containing user-supplied node content",
-        label="Shape file")
+        label="Shape file", graphviz=True)
 
     # Print guide boxes in PostScript at the beginning of
     # routesplines if 1, or at the end if 2. (Debugging)
     showboxes = showboxes_trait
 
     # Number of sides if shape=polygon.
-    sides = Int(4, desc="number of sides if shape=polygon")
+    sides = Int(4, desc="number of sides if shape=polygon", graphviz=True)
 
     # Skew factor for shape=polygon. Positive values skew top of polygon to
     # right; negative to left.
-    skew = Float(0.0, desc="skew factor for shape=polygon")
+    skew = Float(0.0, desc="skew factor for shape=polygon", graphviz=True)
 
     # Set style for node or edge. For cluster subgraph, if "filled", the
     # cluster box's background is filled.
 #    style = ListStr(desc="style for node")
-    style = Str(desc="style for node")
+    style = Str(desc="style for node", graphviz=True)
 
     # If the object has a URL, this attribute determines which window
     # of the browser is used for the URL.
@@ -421,7 +413,7 @@ class Node(HasTraits):
     # <html:a rel="attr">samplepoints</html:a> attribute affects
     # the output.
     vertices = List(pointf_trait, desc="coordinates of the vertices of the "
-        "node's polygon")
+        "node's polygon", graphviz=True)
 #    vertices = pointf_trait
 
     # Width of node, in inches. This is taken as the initial, minimum width
@@ -430,7 +422,7 @@ class Node(HasTraits):
     # requires more width to fit, the node's width will be increased to
     # contain the label. Note also that, if the output format is dot, the
     # value given to <html:a rel="attr">width</html:a> will be the final value.
-    width = Float(0.75, desc="width of node, in inches")
+    width = Float(0.75, desc="width of node, in inches", graphviz=True)
 
     # Provides z coordinate value for 3D layouts and displays. If the
     # graph has <html:a rel="attr">dim</html:a> set to 3 (or more),
@@ -447,7 +439,7 @@ class Node(HasTraits):
     # for the rendering. If the <html:a rel="attr">z</html:a> attribute is declared, the final rendering
     # will be in 3D.
     z = Float(0.0, desc="z coordinate value for 3D layouts and displays",
-        label="z-coordinate")
+        label="z-coordinate", graphviz=True)
 
     #--------------------------------------------------------------------------
     #  Views:
@@ -484,6 +476,34 @@ class Node(HasTraits):
         """
         self.ID = ID
         super(Node, self).__init__(**traits)
+
+
+    def __str__(self):
+        """ Returns a string representation of the node.
+        """
+        attrs = []
+        # Traits to be included in string output have 'graphviz' metadata.
+        for trait_name, trait in self.traits(graphviz=True).iteritems():
+            # Get the value of the trait for comparison with the default.
+            value = getattr(self, trait_name)
+
+            # Only print attribute value pairs if not defaulted.
+            # FIXME: Alias/Synced traits default to None.
+            if value != trait.default:
+                # Add quotes to the value if necessary.
+                if isinstance( value, basestring ):
+                    valstr = '"%s"' % value
+                else:
+                    valstr = str( value )
+
+                attrs.append('%s=%s' % (trait_name, valstr))
+
+        if attrs:
+            # Comma separated list with square brackets.
+            attrstr = "[%s]" % ", ".join(attrs)
+            return "%s %s;" % (self.ID, attrstr)
+        else:
+            return "%s;" % self.ID
 
 
     def __hash__(self):
