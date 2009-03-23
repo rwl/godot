@@ -52,7 +52,7 @@ from enthought.logger.log_queue_handler import LogQueueHandler
 #------------------------------------------------------------------------------
 
 from godot.base_graph import BaseGraph
-from godot.api import Graph, Cluster, Node, Edge, DotParser, Subgraph
+from godot.api import Graph, Cluster, Node, Edge, GodotDataParser, Subgraph
 from godot.graph_menu import menubar, toolbar
 from graph_view import nodes_view, edges_view, attr_view, about_view
 from godot.graph_tree import graph_tree_editor
@@ -180,7 +180,7 @@ class GraphViewModel(ModelView):
     def _parse_dot_code_fired(self):
         """ Parses the dot_code string and replaces the existing model.
         """
-        parser = DotParser()
+        parser = GodotDataParser()
         graph  = parser.parse_dot_data(self.dot_code)
         if graph is not None:
             self.model = graph
