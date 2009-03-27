@@ -186,4 +186,14 @@ class GodotDataParser(DotDataParser):
 
         return graph
 
+
+def parse_dot_file(filename):
+    """ Parses a DOT file and returns a Godot graph.
+    """
+    parser = GodotDataParser()
+    graph  = parser.parse_dot_file(filename)
+    del parser
+
+    return graph
+
 # EOF -------------------------------------------------------------------------

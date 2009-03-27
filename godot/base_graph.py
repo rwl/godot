@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2008 Richard W. Lincoln
+#  Copyright (c) 2009 Richard W. Lincoln
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -50,9 +50,6 @@ from common \
     import id_trait, Alias
 
 import godot
-
-from dot_writer \
-    import write_dot_graph
 
 #from util import Serializable
 

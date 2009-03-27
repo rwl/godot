@@ -46,7 +46,8 @@ from pyparsing import \
 from godot.parsing_util import \
     real, integer, minus, quote, equals, colour, nsplit, ToInteger
 
-from godot.component.api import Pen, Ellipse, Polygon, Polyline, BSpline, Text
+from godot.component.api import \
+    Pen, Ellipse, Polygon, Polyline, BSpline, Text
 
 #------------------------------------------------------------------------------
 #  "XdotAttrParser" class:

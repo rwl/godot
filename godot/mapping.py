@@ -29,16 +29,16 @@ from enthought.enable.tools.api import ViewportPanTool, MoveTool, ResizeTool
 from enthought.enable.base_tool import BaseTool
 from enthought.enable.component_editor import ComponentEditor
 
-from pylon.ui.graph.component.node import DiagramNode
-from pylon.ui.graph.pydot.pydot import Dot, Node, Edge, graph_from_dot_data
-from pylon.ui.graph.xdot_parser import XDotParser
-from pylon.ui.graph.network_dot import rgba2hex
+#from pylon.ui.graph.component.node import DiagramNode
+#from pylon.ui.graph.pydot.pydot import Dot, Node, Edge, graph_from_dot_data
+#from pylon.ui.graph.xdot_parser import XDotParser
+#from pylon.ui.graph.network_dot import rgba2hex
 
 from godot.node import Node as GodotNode
 from godot.edge import Edge as GodotEdge
 
-from element_tool import ElementTool
-from context_menu_tool import ContextMenuTool
+from godot.tool.element_tool import ElementTool
+from godot.tool.context_menu_tool import ContextMenuTool
 
 logger = logging.getLogger(__name__)
 

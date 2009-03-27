@@ -46,7 +46,7 @@ from godot.base_graph import BaseGraph
 from godot.node import Node
 from godot.edge import Edge
 
-from graph_view import nodes_item, edges_item
+from godot.ui.graph_view import nodes_item, edges_item
 
 #------------------------------------------------------------------------------
 #  Constants:

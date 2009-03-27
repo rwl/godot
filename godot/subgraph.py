@@ -33,11 +33,17 @@ from enthought.traits.api import \
 from enthought.traits.ui.api import \
     View, Item, Group, Tabbed, HGroup, VGroup
 
-from godot.base_graph import BaseGraph
-from godot.node import Node
-from godot.edge import Edge
+from godot.base_graph \
+    import BaseGraph
 
-from graph_view import nodes_item, edges_item, subgraphs_notebook_group
+from godot.node \
+    import Node
+
+from godot.edge \
+    import Edge
+
+from godot.ui.graph_view \
+    import nodes_item, edges_item, subgraphs_notebook_group
 
 from common import Alias
 

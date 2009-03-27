@@ -41,11 +41,8 @@ from enthought.naming.unique_name import make_unique_name
 from enthought.pyface.image_resource import ImageResource
 from enthought.enable.component_editor import ComponentEditor
 
-from godot.node import Node
-from godot.edge import Edge
+import godot
 
-#from node import node_table_editor
-#from edge import edge_table_editor
 #------------------------------------------------------------------------------
 #  Images:
 #------------------------------------------------------------------------------
@@ -63,9 +60,9 @@ def node_factory(**row_factory_kw):
         graph = row_factory_kw["__table_editor__"].object
         ID = make_unique_name("node", [node.ID for node in graph.nodes])
         del row_factory_kw["__table_editor__"]
-        return Node(ID)
+        return godot.Node(ID)
     else:
-        return Node(uuid.uuid4().hex[:6])
+        return godot.Node(uuid.uuid4().hex[:6])
 
 #------------------------------------------------------------------------------
 #  Node table editor:
@@ -109,16 +106,16 @@ def edge_factory(**row_factory_kw):
         IDs = [v.ID for v in graph.nodes]
 
         if n_nodes == 0:
-            tail_node = Node(ID=make_unique_name("node", IDs))
-            head_node = Node(ID=make_unique_name("node", IDs))
+            tail_node = godot.Node(ID=make_unique_name("node", IDs))
+            head_node = godot.Node(ID=make_unique_name("node", IDs))
         elif n_nodes == 1:
             tail_node = graph.nodes[0]
-            head_node = Node(ID=make_unique_name("node", IDs))
+            head_node = godot.Node(ID=make_unique_name("node", IDs))
         else:
             tail_node = graph.nodes[0]
             head_node = graph.nodes[1]
 
-        return Edge(tail_node, head_node, _nodes=graph.nodes)
+        return godot.Edge(tail_node, head_node, _nodes=graph.nodes)
     else:
         return None
 

@@ -20,7 +20,8 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
-""" Defines a tree editor for Godot graphs. """
+""" Defines a tree editor for Godot graphs.
+"""
 
 #------------------------------------------------------------------------------
 #  Imports:

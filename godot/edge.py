@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------
 #
-#  Copyright (c) 2008, Richard W. Lincoln
+#  Copyright (c) 2009, Richard W. Lincoln
 #  All rights reserved.
 #
 #  This software is provided without warranty under the terms of the BSD
@@ -13,7 +13,8 @@
 #
 #------------------------------------------------------------------------------
 
-""" Defines a graph edge """
+""" Defines a graph edge.
+"""
 
 #------------------------------------------------------------------------------
 #  Imports:

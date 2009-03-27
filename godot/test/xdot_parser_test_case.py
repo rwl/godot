@@ -28,8 +28,11 @@
 
 import unittest
 
-from godot.xdot_attr_parser import XdotAttrParser
-from godot.component.api import Ellipse, Polygon, Polyline, BSpline, Text
+from godot.xdot_parser \
+    import XdotAttrParser
+
+from godot.component.api \
+    import Ellipse, Polygon, Polyline, BSpline, Text
 
 fill_color = "C 4 -blue"
 fill_rgb = "C 7 -#000080"

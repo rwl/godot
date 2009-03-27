@@ -20,12 +20,7 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
-from graph import Graph
-from subgraph import Subgraph
-from cluster import Cluster
-from node import Node
-from edge import Edge
-
-from dot_data_parser import GodotDataParser, parse_dot_file
+from context_menu_tool import ContextMenuTool
+from element_tool import ElementTool
 
 # EOF -------------------------------------------------------------------------

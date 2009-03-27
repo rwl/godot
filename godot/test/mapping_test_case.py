@@ -23,14 +23,13 @@
 
 from unittest import TestCase
 
-from enthought.traits.api import HasTraits, ListInstance, Str, Instance
+from enthought.traits.api import HasTraits, ListInstance, Str, Instance, List
+from enthought.traits.ui.api import View, Item, Group, ModelView
 from enthought.enable.tools.api import MoveTool
 
-from pyramid.mapping import Mapping, CanvasMapping, NodeMapping
-from pyramid.element_tool import ElementTool
-from pyramid.component.node import DiagramNode
-
-from godot.node import DotGraphNode
+from godot.mapping import Mapping, CanvasMapping, NodeMapping
+from godot.tool.api import ElementTool
+from godot.ui.api import GraphEditor, GraphNode
 
 #------------------------------------------------------------------------------
 #  Constants:
@@ -45,7 +44,7 @@ OTHER_NODE_SHAPE = "circle"
 
 class DomainNode(HasTraits):
     name = Str("node")
-    
+
 class OtherNode(HasTraits):
     name = Str("other")
 
@@ -54,9 +53,25 @@ class DomainEdge(HasTraits):
     target = Instance(DomainNode)
 
 class DomainModel(HasTraits):
-    nodes = ListInstance(DomainNode)
-    edges = ListInstance(DomainEdge)
-    other_nodes = ListInstance(OtherNode)
+    nodes = List( Instance(DomainNode) )
+    edges = List( Instance(DomainEdge) )
+    other_nodes = List( Instance(OtherNode) )
+
+graph_editor = GraphEditor(
+    nodes = [
+        GraphNode( child_of = "nodes",
+                   label    = "name",
+                   node_for = [DomainNode]
+        ),
+        GraphNode( child_of = "other_nodes",
+                   label    = "name",
+                   node_for = [OtherNode]
+        )
+    ]
+)
+
+class DomainViewModel(ModelView):
+    traits_view = View( Item("model", editor=graph_editor) )
 
 #------------------------------------------------------------------------------
 #  "MappingTestCase" class:

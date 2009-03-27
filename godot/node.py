@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2008 Richard W. Lincoln
+#  Copyright (c) 2009 Richard W. Lincoln
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -20,7 +20,8 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
-""" Defines a graph node. """
+""" Defines a graph node.
+"""
 
 #------------------------------------------------------------------------------
 #  Imports:

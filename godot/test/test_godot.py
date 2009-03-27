@@ -20,7 +20,7 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
-""" Defines tests for the Dot data parser.
+""" Defines the test suite for Godot.
 """
 
 #------------------------------------------------------------------------------
@@ -29,41 +29,36 @@
 
 import unittest
 
-from os.path import join, dirname
+from graph_test_case \
+    import NodeTestCase, EdgeTestCase, GraphTestCase, SubgraphTestCase
 
-from godot.api \
-    import Graph, Subgraph, Cluster, Node, Edge, GodotDataParser
+from parser_test_case \
+    import ParserTestCase
 
-CLUSTER_GRAPH = join(dirname(__file__), "data", "clust.dot")
-COLORS_GRAPH = join(dirname(__file__), "data", "colors.dot")
+from xdot_parser_test_case \
+    import XdotAttrParserTestCase
 
 #------------------------------------------------------------------------------
-#  "ParserTestCase" class:
+#  "suite" function:
 #------------------------------------------------------------------------------
 
-class ParserTestCase(unittest.TestCase):
-    """ Defines a test case for the Dot data parser.
+def suite():
+    """ Returns the test suite for Godot.
     """
+    suite = unittest.TestSuite()
 
-    def test_parsing_cluster_graph(self):
-        """ Test parsing of a graph with nested clusters.
-        """
-        parser = GodotDataParser()
-        graph = parser.parse_dot_file(CLUSTER_GRAPH)
-#        self.failUnless(graph.name == "testG")
-#        graph.configure_traits()
-#        graph.save_to_file("/tmp/clust.dot")
-        print graph.clusters[0]
+    suite.addTest(unittest.makeSuite(NodeTestCase))
+    suite.addTest(unittest.makeSuite(EdgeTestCase))
+    suite.addTest(unittest.makeSuite(GraphTestCase))
+    suite.addTest(unittest.makeSuite(SubgraphTestCase))
 
 
-#    def test_parse_colors(self):
-#        """ Test parsing of a graph with colors.
-#        """
-#        parser = GodotDataParser()
-#        graph = parser.parse_dot_file(COLORS_GRAPH)
+    suite.addTest(unittest.makeSuite(ParserTestCase))
+    suite.addTest(unittest.makeSuite(XdotAttrParserTestCase))
 
+    return suite
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity = 2).run(suite())
 
 # EOF -------------------------------------------------------------------------

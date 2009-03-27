@@ -28,7 +28,8 @@
 #------------------------------------------------------------------------------
 
 from enthought.traits.api \
-    import Any, Dict, Bool, Tuple, Int, List, Instance, Str, Enum
+    import HasTraits, HasPrivateTraits, Any, Dict, Bool, Tuple, Int, \
+    List, Instance, Str, Enum, Callable
 
 from enthought.traits.ui.editor_factory \
     import EditorFactory
@@ -39,8 +40,73 @@ from enthought.traits.ui.helper \
 from enthought.traits.ui.editor \
     import Editor
 
-from godot.graph \
+from godot.api \
     import Graph
+
+#------------------------------------------------------------------------------
+#  'GraphNode' class:
+#------------------------------------------------------------------------------
+
+class GraphNode ( HasPrivateTraits ):
+    """ Defines a representation of a graph node for use by the graph editor
+        and the graph editor factory classes.
+    """
+
+    # Name of the context object's trait that contains the object being
+    # represented by the node.
+    child_of = Str
+
+    # Either the name of a trait containing a label, or a constant label, if
+    # the string starts with '='.
+    label = Str
+
+    # Function for formatting the label.
+    formatter = Callable
+
+    # List of object classes and/or interfaces that the node applies to
+    node_for = List( Any )
+
+    #---------------------------------------------------------------------------
+    #  Gets the label to display for a specified object:
+    #---------------------------------------------------------------------------
+
+    def get_label ( self, object ):
+        """ Gets the label to display for a specified object.
+        """
+        label = self.label
+        if label[:1] == '=':
+            return label[1:]
+
+        label = xgetattr( object, label, '' )
+
+        if self.formatter is None:
+            return label
+
+        return self.formatter( object, label )
+
+    #---------------------------------------------------------------------------
+    #  Sets the label for a specified object:
+    #---------------------------------------------------------------------------
+
+    def set_label ( self, object, label ):
+        """ Sets the label for a specified object.
+        """
+        label_name = self.label
+        if label_name[:1] != '=':
+            xsetattr( object, label_name, label )
+
+    #---------------------------------------------------------------------------
+    #  Sets up/Tears down a listener for 'label changed' on a specified object:
+    #---------------------------------------------------------------------------
+
+    def when_label_changed ( self, object, listener, remove ):
+        """ Sets up or removes a listener for the label being changed on a
+        specified object.
+        """
+        label = self.label
+        if label[:1] != '=':
+            object.on_trait_change( listener, label, remove = remove,
+                                    dispatch = 'ui' )
 
 #------------------------------------------------------------------------------
 #  'SimpleGraphEditor' class:
@@ -104,5 +170,8 @@ class ToolkitEditorFactory ( EditorFactory ):
         except:
             SimpleEditor = toolkit_object('editor_factory:SimpleEditor')
         return SimpleEditor
+
+# Define the GraphEditor class.
+GraphEditor = ToolkitEditorFactory
 
 # EOF -------------------------------------------------------------------------

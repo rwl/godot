@@ -29,7 +29,8 @@
 
 import unittest
 
-from godot.api import Graph, Subgraph, Cluster, Node, Edge
+from godot.api \
+    import Graph, Subgraph, Cluster, Node, Edge
 
 #------------------------------------------------------------------------------
 #  "NodeTestCase" class:

@@ -53,10 +53,10 @@ from enthought.logger.log_queue_handler import LogQueueHandler
 
 from godot.base_graph import BaseGraph
 from godot.api import Graph, Cluster, Node, Edge, GodotDataParser, Subgraph
-from godot.graph_menu import menubar, toolbar
-from graph_view import nodes_view, edges_view, attr_view, about_view
-from godot.graph_tree import graph_tree_editor
-from godot.dot_writer import write_dot_graph
+
+from godot.ui.graph_menu import menubar, toolbar
+from godot.ui.graph_view import nodes_view, edges_view, attr_view, about_view
+from godot.ui.graph_tree import graph_tree_editor
 
 #------------------------------------------------------------------------------
 #  Constants:
@@ -223,7 +223,7 @@ class GraphViewModel(ModelView):
                 "All Files (*.*)|*.*|")
 
         if dlg.open() == OK:
-            parser = DotParser()
+            parser = GodotDataParser()
             self.model = parser.parse_dot_file(dlg.path)
 
             self.save_file = dlg.path
@@ -255,7 +255,7 @@ class GraphViewModel(ModelView):
             fd = None
             try:
                 fd = open(save_file, "wb")
-                dot_code = write_dot_graph(self.model)
+                dot_code = str(self.model)
                 fd.write(dot_code)
             finally:
                 if fd is not None:
@@ -279,17 +279,16 @@ class GraphViewModel(ModelView):
             fd = None
             try:
                 fd = open(dlg.path, "wb")
-                dot_code = write_dot_graph(self.model)
+                dot_code = str(self.model)
                 fd.write(dot_code)
 
                 self.save_file = dlg.path
 
-#            except:
-#                error(
-#                    parent=info.ui.control, title="Save Error",
-#                    message="An error was encountered when saving\nto %s"
-#                    % self.file
-#                )
+            except:
+                error(parent=info.ui.control, title="Save Error",
+                      message="An error was encountered when saving\nto %s"
+                      % self.file)
+
             finally:
                 if fd is not None:
                     fd.close()
@@ -298,40 +297,40 @@ class GraphViewModel(ModelView):
 
 
     def configure_graph(self, info):
-        """ Handles display of the graph dot traits. """
-
+        """ Handles display of the graph dot traits.
+        """
         if info.initialized:
             self.model.edit_traits(parent=info.ui.control,
                 kind="live", view=attr_view)
 
 
     def configure_nodes(self, info):
-        """ Handles display of the nodes editor. """
-
+        """ Handles display of the nodes editor.
+        """
         if info.initialized:
             self.model.edit_traits(parent=info.ui.control,
                 kind="live", view=nodes_view)
 
 
     def configure_edges(self, info):
-        """ Handles display of the edges editor. """
-
+        """ Handles display of the edges editor.
+        """
         if info.initialized:
             self.model.edit_traits(parent=info.ui.control,
                 kind="live", view=edges_view)
 
 
     def about_godot(self, info):
-        """ Handles displaying a view about Godot. """
-
+        """ Handles displaying a view about Godot.
+        """
         if info.initialized:
             self.edit_traits(parent=info.ui.control,
                 kind="livemodal", view=about_view)
 
 
     def add_node(self, info):
-        """ Handles adding a Node to the graph. """
-
+        """ Handles adding a Node to the graph.
+        """
         if not info.initialized:
             return
 
@@ -351,8 +350,8 @@ class GraphViewModel(ModelView):
 
 
     def add_edge(self, info):
-        """ Handles adding an Edge to the graph. """
-
+        """ Handles adding an Edge to the graph.
+        """
         if not info.initialized:
             return
 
@@ -366,7 +365,8 @@ class GraphViewModel(ModelView):
 
         if n_nodes == 0:
             tail_node = Node(ID=make_unique_name("node", IDs))
-            head_node = Node(ID=make_unique_name("node", IDs + [tail_node.ID]))
+            head_name = make_unique_name("node", IDs + [tail_node.ID])
+            head_node = Node(ID=head_name)
         elif n_nodes == 1:
             tail_node = graph.nodes[0]
             head_node = Node(ID=make_unique_name("node", IDs))
@@ -383,8 +383,8 @@ class GraphViewModel(ModelView):
 
 
     def add_subgraph(self, info):
-        """ Handles adding a Subgraph to the main graph. """
-
+        """ Handles adding a Subgraph to the main graph.
+        """
         if not info.initialized:
             return
 
@@ -453,7 +453,7 @@ class GraphViewModel(ModelView):
         if not info.initialized:
             return
 
-        self.dot_code = write_dot_graph(self.model)
+        self.dot_code = str(self.model)
         retval = self.edit_traits( parent = info.ui.control,
                                    kind   = "livemodal",
                                    view   = "dot_code_view" )
