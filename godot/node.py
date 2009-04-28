@@ -43,6 +43,7 @@ from enthought.traits.ui.table_filter import \
     EvalFilterTemplate, MenuFilterTemplate, RuleFilterTemplate, RuleTableFilter
 
 from enthought.enable.api import Container
+from enthought.enable.component_editor import ComponentEditor
 from enthought.naming.unique_name import make_unique_name
 
 from common import \
@@ -53,6 +54,8 @@ from common import \
     color_trait, Alias
 
 from xdot_parser import XdotAttrParser
+
+import godot.graph
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -131,7 +134,7 @@ class Node(HasTraits):
     # is interpreted as <html:code>/bugn9/7</html:code>.
     colorscheme = color_scheme_trait
 
-	# Comments are inserted into output. Device-dependent.
+  # Comments are inserted into output. Device-dependent.
     comment = comment_trait
 
     # Distortion factor for <html:a rel="attr">shape</html:a>=polygon.
@@ -162,7 +165,7 @@ class Node(HasTraits):
     fixedsize = Bool(False, desc="node size to be specified by 'width' and "
         "'height'", label="Fixed size", graphviz=True)
 
-	# Color used for text.
+  # Color used for text.
     fontcolor = fontcolor_trait
 
     # Font used for text. This very much depends on the output format and, for
@@ -315,7 +318,7 @@ class Node(HasTraits):
     # ignores any such flag.
     pos = pos_trait
 
-	# Rectangles for fields of records, in <html:a rel="note">points</html:a>.
+  # Rectangles for fields of records, in <html:a rel="note">points</html:a>.
     rects = rectangle_trait
 
     # If true, force polygon to be regular.
@@ -341,7 +344,7 @@ class Node(HasTraits):
     samplepoints = Int(8, desc="number of points used for a node whose shape "
         "is a circle or ellipse", label="Sample points", graphviz=True)
 
-	# Set polygon to be regular.
+  # Set polygon to be regular.
     shape = shape_trait#(desc="polygon to be regular")
 
     # (Deprecated) If defined, shapefile specifies a file containing
@@ -448,7 +451,9 @@ class Node(HasTraits):
 
     traits_view = View(
         Tabbed(
-            Group(["ID", "_", "shape", "shapefile", "color", "fillcolor",
+            Group([Item(name="component", editor=ComponentEditor(height=50),
+                show_label=False, id=".component")],
+                ["ID", "_", "shape", "shapefile", "color", "fillcolor",
                 "colorscheme", "style", "showboxes", "tooltip", "distortion",
                 "sides", "target", "comment"],
                 Group(["_draw_", "_ldraw_"], label="Xdot", show_border=True),
@@ -539,9 +544,26 @@ class Node(HasTraits):
     #  Event handlers:
     #--------------------------------------------------------------------------
 
+    @on_trait_change("distortion")
+    def arrange(self):
+        import godot.dot_data_parser
+
+        graph = godot.graph.Graph(ID="g")
+        graph.add_node(self)
+        xdot_data = graph.create( format = "xdot" )
+
+        print "XDOT DATA:\n\n", xdot_data
+        parser = godot.dot_data_parser.GodotDataParser()
+        xdot_graph = parser.parse_dot_data( xdot_data )
+
+        print "Xdot graph nodes:", xdot_graph.nodes
+
+
     @on_trait_change("_draw_")
     def parse_xdot_drawing_directive(self, new):
         """ Parses the drawing directive, updating the node components. """
+
+        print "_draw_", new
 
         components = XdotAttrParser().parse_xdot_data(new)
 
@@ -579,6 +601,8 @@ class Node(HasTraits):
         if new is not None:
             self.component.add(new)
 
+        self.component.request_redraw()
+
 
     def _label_drawing_changed(self, old, new):
         """ Handles the container of label components changing. """
@@ -587,6 +611,8 @@ class Node(HasTraits):
             self.component.remove(old)
         if new is not None:
             self.component.add(new)
+
+        self.component.request_redraw()
 
 #------------------------------------------------------------------------------
 #  Stand-alone call:
@@ -601,8 +627,8 @@ if __name__ == "__main__":
     from godot.component.component_viewer import ComponentViewer
 
     node = Node("node1", _draw_="c 5 -black e 32 18 32 18")
-#    node.configure_traits()
-    viewer = ComponentViewer(component=node.component)
-    viewer.configure_traits()
+    node.configure_traits()
+#    viewer = ComponentViewer(component=node.component)
+#    viewer.configure_traits()
 
 # EOF +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

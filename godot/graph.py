@@ -59,7 +59,7 @@ from godot.edge import Edge
 from godot.subgraph import Subgraph
 from godot.cluster import Cluster
 
-from graph_view import graph_view, tabbed_view
+from godot.ui.graph_view import graph_view, tabbed_view
 
 #------------------------------------------------------------------------------
 #  Logging:
@@ -91,7 +91,7 @@ class Graph(BaseGraph):
     #--------------------------------------------------------------------------
 
     # A strict graph is an unweighted, undirected graph containing no
-	# graph loops or multiple edges.
+  # graph loops or multiple edges.
     strict = Bool(False, desc="A strict graph is an unweighted, "
         "undirected graph containing no graph loops or multiple edges." )
 
@@ -126,7 +126,7 @@ class Graph(BaseGraph):
     bgcolor = Color("white", desc="color used as the background for the "
         "entire canvas", label="Background Color", graphviz=True)
 
-	# If true, the drawing is centered in the output canvas.
+  # If true, the drawing is centered in the output canvas.
     center = Bool(False, desc="is drawing centered in the output canvas",
         graphviz=True)
 
@@ -159,15 +159,15 @@ class Graph(BaseGraph):
     # is interpreted as <html:code>/bugn9/7</html:code>.
     colorscheme = color_scheme_trait
 
-	# Comments are inserted into output. Device-dependent.
+  # Comments are inserted into output. Device-dependent.
     comment = Str(desc="comments are inserted into output", graphviz=True)
 
-	# If <html:span class="val">true</html:span>, allow edges between clusters.
+  # If <html:span class="val">true</html:span>, allow edges between clusters.
     # (See <html:a rel="attr">lhead</html:a> and <html:a rel="attr">ltail</html:a> below.)
     compound = Bool(False, desc="edges allowed between clusters",
         graphviz=True)
 
-	# If <html:span class="val">true</html:span>, use edge concentrators.
+  # If <html:span class="val">true</html:span>, use edge concentrators.
     concentrate = Bool(False, desc="edge concentrators", graphviz=True)
 
     # Factor damping force motions. On each iteration, a nodes movement
@@ -215,7 +215,7 @@ class Graph(BaseGraph):
         "by 1 + esep) for purposes of spline edge routing",
         label="Edge separation", graphviz=True)
 
-	# Color used for text.
+  # Color used for text.
     fontcolor = fontcolor_trait
 
     # Font used for text. This very much depends on the output format and, for
@@ -264,7 +264,7 @@ class Graph(BaseGraph):
     # Note that fontpath is an attribute of the root graph.
     fontpath = List(Directory, label="Font path", graphviz=True)
 
-	# Font size, in <html:a rel="note">points</html:a>, used for text.
+  # Font size, in <html:a rel="note">points</html:a>, used for text.
     fontsize = fontsize_trait
 
     # Spring constant used in virtual physical model. It roughly corresponds to
@@ -358,7 +358,7 @@ class Graph(BaseGraph):
         "during crossing minimization", label="Multiplicative scale factor",
         graphviz=True)
 
-	# Specifies the minimum separation between all nodes.
+  # Specifies the minimum separation between all nodes.
     mindist = Float(1.0, desc="minimum separation between all nodes",
         label="Minimum separation", graphviz=True)
 
@@ -397,7 +397,7 @@ class Graph(BaseGraph):
     mosek = Bool(False, desc="solve the ipsep constraints with MOSEK",
         graphviz=True)
 
-	# Minimum space between two adjacent nodes in the same rank, in inches.
+  # Minimum space between two adjacent nodes in the same rank, in inches.
     nodesep = Float(0.25, desc="minimum space between two adjacent nodes in "
         "the same rank", label="Node separation", graphviz=True)
 
@@ -646,7 +646,7 @@ class Graph(BaseGraph):
         "run cross minimization a second", label="Re-cross minimization",
         graphviz=True)
 
-	# This is a synonym for the <html:a rel="attr">dpi</html:a> attribute.
+  # This is a synonym for the <html:a rel="attr">dpi</html:a> attribute.
     resolution = Alias("dpi", desc="a synonym for the dpi attribute",
         graphviz=True)
 
@@ -660,7 +660,7 @@ class Graph(BaseGraph):
     # twopi will pick a most central node, and circo will pick a random node.
     root = root_trait
 
-	# If 90, set drawing orientation to landscape.
+  # If 90, set drawing orientation to landscape.
     rotate = Range(0, 360, desc="drawing orientation", graphviz=True)
 
     # During network simplex, maximum number of edges with negative cut values
@@ -684,8 +684,8 @@ class Graph(BaseGraph):
         "1 + sep) for purposes of determining overlap", label="Separation",
         graphviz=True)
 
-	# Print guide boxes in PostScript at the beginning of
-	# routesplines if 1, or at the end if 2. (Debugging)
+  # Print guide boxes in PostScript at the beginning of
+  # routesplines if 1, or at the end if 2. (Debugging)
     showboxes = showboxes_trait
 
     # Maximum width and height of drawing, in inches.
@@ -747,7 +747,7 @@ class Graph(BaseGraph):
     # used when the style is "random".
     start = start_trait
 
-	# A URL or pathname specifying an XML style sheet, used in SVG output.
+  # A URL or pathname specifying an XML style sheet, used in SVG output.
     stylesheet = Str(desc="URL or pathname specifying an XML style sheet",
         label="Style sheet", graphviz=True)
 

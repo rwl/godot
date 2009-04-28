@@ -27,8 +27,9 @@
 #------------------------------------------------------------------------------
 
 import os
-
+import logging
 import tempfile
+import subprocess
 
 from enthought.traits.api \
     import HasTraits, Str, List, Instance, Bool, Property, Constant, \
@@ -62,6 +63,8 @@ FORMATS = ['dot', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dia', 'fig', 'gd',
 RENDERERS = ['cairo', 'gd']
 
 FORMATTERS = ['cairo', 'gd', 'gdk_pixbuf']
+
+logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------------------
 #  "BaseGraph" class:
@@ -333,12 +336,14 @@ class BaseGraph ( HasTraits ):
         tmp_fd, tmp_name = tempfile.mkstemp()
         os.close( tmp_fd )
         # ... and save the graph to it.
-        self.save_to_file(tmp_name, format="dot")
+        dot_fd = file( tmp_name, "w+b" )
+        self.save_dot( dot_fd )
+        dot_fd.close()
 
         # Get the temporary file directory name.
         tmp_dir = os.path.dirname( tmp_name )
 
-        # TODO: Shape image files (See Pydot).
+        # TODO: Shape image files (See PyDot). Important.
 
         # Process the file using the layout program, specifying the format.
         p = subprocess.Popen(
@@ -399,7 +404,7 @@ class BaseGraph ( HasTraits ):
 
         print "XDOT DATA:\n\n", xdot_data
 
-        parser = dot_parser.DotParser()
+        parser = godot.dot_data_parser.DotParser()
         xdot_graph = parser.parse_dot_data( xdot_data )
 
 
@@ -564,10 +569,10 @@ class BaseGraph ( HasTraits ):
         from enthought.enable.tools.api import MoveTool
 
         for node in event.added:
-            box = Box(color="steelblue", border_color="darkorchid",
-                border_size=1, bounds=[50, 50], position=[10, 10])
-            box.tools.append(MoveTool(box))
-            self.component.add(box)
+#            box = Box(color="steelblue", border_color="darkorchid",
+#                border_size=1, bounds=[50, 50], position=[10, 10])
+#            box.tools.append(MoveTool(box))
+#            self.component.add(box)
             self.component.add(node.component)
 
         self.component.request_redraw()
