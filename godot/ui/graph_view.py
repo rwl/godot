@@ -60,9 +60,9 @@ def node_factory(**row_factory_kw):
         graph = row_factory_kw["__table_editor__"].object
         ID = make_unique_name("node", [node.ID for node in graph.nodes])
         del row_factory_kw["__table_editor__"]
-        return godot.Node(ID)
+        return godot.node.Node(ID)
     else:
-        return godot.Node(uuid.uuid4().hex[:6])
+        return godot.node.Node(uuid.uuid4().hex[:6])
 
 #------------------------------------------------------------------------------
 #  Node table editor:
