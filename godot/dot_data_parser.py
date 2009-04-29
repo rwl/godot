@@ -27,12 +27,12 @@
 #  Imports:
 #------------------------------------------------------------------------------
 
-from dot2tex.dotparsing \
-    import DotDataParser, ADD_NODE, ADD_EDGE, ADD_GRAPH_TO_NODE_EDGE, \
+from dot2tex.dotparsing import \
+    DotDataParser, ADD_NODE, ADD_EDGE, ADD_GRAPH_TO_NODE_EDGE, \
     ADD_NODE_TO_GRAPH_EDGE, ADD_GRAPH_TO_GRAPH_EDGE, ADD_SUBGRAPH, \
     SET_DEF_NODE_ATTR, SET_DEF_EDGE_ATTR, SET_DEF_GRAPH_ATTR, SET_GRAPH_ATTR
 
-from enthought.traits.api import Float
+from enthought.traits.api import Float, Tuple
 
 from graph import Graph
 from subgraph import Subgraph
@@ -51,13 +51,15 @@ class GodotDataParser(DotDataParser):
     def _proc_node_stmt(self, toks):
         """ Return (ADD_NODE, node_name, options)
         """
-        print "OPTIONS:", toks[1]
         opts = toks[1]
         # Coerce attribute types.
         for key, value in opts.iteritems():
             trait = Node("dummy").trait(key)
-            if trait.is_trait_type( Float ):
-                opts[key] = float( value )
+            if trait is not None:
+                if trait.is_trait_type( Float ):
+                    opts[key] = float( value )
+                if trait.is_trait_type( Tuple ):
+                    opts[key] = tuple( [float(c) for c in value.split(",")] )
 
         return super(GodotDataParser, self)._proc_node_stmt(toks)
 

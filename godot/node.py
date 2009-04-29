@@ -42,9 +42,10 @@ from enthought.traits.ui.extras.checkbox_column import CheckboxColumn
 from enthought.traits.ui.table_filter import \
     EvalFilterTemplate, MenuFilterTemplate, RuleFilterTemplate, RuleTableFilter
 
-from enthought.enable.api import Container
-from enthought.enable.component_editor import ComponentEditor
 from enthought.naming.unique_name import make_unique_name
+from enthought.enable.api import Container, Viewport
+from enthought.enable.component_editor import ComponentEditor
+from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
 
 from common import \
     color_scheme_trait, comment_trait, fontcolor_trait, fontname_trait, \
@@ -68,7 +69,8 @@ node_shapes = ["rect", "rectangle", "box", "ellipse", "circle", "invtriangle",
     "none", "note", "tab", "box3d", "component"] + ["Msquare", "Mdiamond",
                                                     "Mcircle"]
 
-shape_trait = Enum(node_shapes, desc="node shape", label="Node shape")
+shape_trait = Enum(node_shapes, desc="node shape", label="Node shape",
+    graphviz=True)
 
 #------------------------------------------------------------------------------
 #  "Node" class:
@@ -98,14 +100,17 @@ class Node(HasTraits):
     #  Enable trait definitions:
     #--------------------------------------------------------------------------
 
-    # Container for the drawing and label components.
-    component = Instance(Container, desc="container of graph components.")
-
     # Container of drawing components, typically the node shape.
     drawing = Instance(Container)
 
     # Container of label components.
     label_drawing = Instance(Container)
+
+    # Container for the drawing and label components.
+    component = Instance(Container, desc="container of graph components.")
+
+    # A view into a sub-region of the canvas.
+    vp = Instance(Viewport, desc="a view of a sub-region of the canvas")
 
     #--------------------------------------------------------------------------
     #  Graphviz dot language trait definitions:
@@ -451,7 +456,7 @@ class Node(HasTraits):
 
     traits_view = View(
         Tabbed(
-            Group([Item(name="component", editor=ComponentEditor(height=50),
+            Group([Item(name="vp", editor=ComponentEditor(height=50),
                 show_label=False, id=".component")],
                 ["ID", "_", "shape", "shapefile", "color", "fillcolor",
                 "colorscheme", "style", "showboxes", "tooltip", "distortion",
@@ -496,9 +501,16 @@ class Node(HasTraits):
             # Only print attribute value pairs if not defaulted.
             # FIXME: Alias/Synced traits default to None.
             if value != trait.default:
+                trait = self.trait( trait_name )
+
+                # Format trait values.
+                if trait.is_trait_type( Tuple ):
+                    valstr  = '"%s"' % ",".join( [str(d) for d in value] )
+
                 # Add quotes to the value if necessary.
-                if isinstance( value, basestring ):
+                elif isinstance( value, basestring ):
                     valstr = '"%s"' % value
+
                 else:
                     valstr = str( value )
 
@@ -509,7 +521,7 @@ class Node(HasTraits):
             attrstr = "[%s]" % ", ".join(attrs)
             return "%s %s;" % (self.ID, attrstr)
         else:
-            return "%s;" % self.ID
+            return "%s" % self.ID
 
 
     def __hash__(self):
@@ -540,23 +552,60 @@ class Node(HasTraits):
         """
         return Container(fit_window=False, auto_size=True)
 
+
+    def _vp_default(self):
+        """ Trait initialiser.
+        """
+        vp = Viewport(component=self.component)
+        vp.enable_zoom=True
+
+        vp.view_position = [-10, -10]
+
+        vp.tools.append(ViewportPanTool(vp))
+
+        return vp
+
     #--------------------------------------------------------------------------
     #  Event handlers:
     #--------------------------------------------------------------------------
 
-    @on_trait_change("distortion")
+#    @on_trait_change("shape")
     def arrange(self):
         import godot.dot_data_parser
 
+        if not self.traits_inited():
+            return
+
         graph = godot.graph.Graph(ID="g")
         graph.add_node(self)
+
+        print "GRAPH DOT:\n", str(graph)
+
         xdot_data = graph.create( format = "xdot" )
 
-        print "XDOT DATA:\n\n", xdot_data
+        print "XDOT DATA:\n", xdot_data
         parser = godot.dot_data_parser.GodotDataParser()
-        xdot_graph = parser.parse_dot_data( xdot_data )
 
-        print "Xdot graph nodes:", xdot_graph.nodes
+#        parser.parse_dot_data(xdot_data)
+
+        flat_data = xdot_data.replace('\\\n','')
+        tokens = parser.dotparser.parseString(flat_data)[0]
+
+        for element in tokens[3]:
+            print "TOK:", element
+            cmd = element[0]
+            if cmd == 'add_node':
+                cmd, nodename, opts = element
+                assert nodename == self.ID
+                print "OPTIONS:", opts
+                self.set( **opts )
+
+#        xdot_graph = parser.parse_dot_data( xdot_data )
+#
+#        if xdot_graph.nodes:
+#            for attr in ["_draw_", "_ldraw_", "pos", "width", "height"]:
+#                value = getattr( xdot_graph.nodes[0], attr )
+#                setattr( self, attr, value )
 
 
     @on_trait_change("_draw_")
@@ -574,7 +623,7 @@ class Node(HasTraits):
 #        self.bounds = bounds=[max_x, max_y]
 
         container = Container(fit_window=False, auto_size=True)
-        container.add(*components)
+        container.add( *components )
         self.drawing = container
 
 
@@ -589,7 +638,7 @@ class Node(HasTraits):
         print "COMPONENTS:", components
 
         container = Container(fit_window=False, auto_size=True)#bounds=[200, 200])
-        container.add(*components)
+        container.add( *components )
         self.label_drawing = container
 
 
@@ -627,6 +676,8 @@ if __name__ == "__main__":
     from godot.component.component_viewer import ComponentViewer
 
     node = Node("node1", _draw_="c 5 -black e 32 18 32 18")
+    node.shape = "triangle"
+    node.arrange()
     node.configure_traits()
 #    viewer = ComponentViewer(component=node.component)
 #    viewer.configure_traits()

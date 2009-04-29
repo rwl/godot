@@ -73,10 +73,10 @@ logger = logging.getLogger(__name__)
 
 cluster_mode_trait = Enum(
     "local", "global", "none", desc="mode used for handling clusters",
-    label="Cluster rank"
+    label="Cluster rank", graphviz=True
 )
 
-start_trait = Enum("regular", "self", "random")
+start_trait = Enum("regular", "self", "random", graphviz=True)
 
 #------------------------------------------------------------------------------
 #  "Graph" class:
