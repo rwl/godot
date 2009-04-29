@@ -32,7 +32,7 @@ from dot2tex.dotparsing import \
     ADD_NODE_TO_GRAPH_EDGE, ADD_GRAPH_TO_GRAPH_EDGE, ADD_SUBGRAPH, \
     SET_DEF_NODE_ATTR, SET_DEF_EDGE_ATTR, SET_DEF_GRAPH_ATTR, SET_GRAPH_ATTR
 
-from enthought.traits.api import Float, Tuple
+from enthought.traits.api import Float, Tuple, List
 
 from graph import Graph
 from subgraph import Subgraph
@@ -52,16 +52,39 @@ class GodotDataParser(DotDataParser):
         """ Return (ADD_NODE, node_name, options)
         """
         opts = toks[1]
+        dummy_node = Node("dummy")
         # Coerce attribute types.
         for key, value in opts.iteritems():
-            trait = Node("dummy").trait(key)
+            trait = dummy_node.trait(key)
             if trait is not None:
                 if trait.is_trait_type( Float ):
                     opts[key] = float( value )
+
                 if trait.is_trait_type( Tuple ):
                     opts[key] = tuple( [float(c) for c in value.split(",")] )
 
         return super(GodotDataParser, self)._proc_node_stmt(toks)
+
+
+    def _proc_edge_stmt(self, toks):
+        """ Returns a tuple of the form (ADD_EDGE, src, dest, options).
+        """
+        print toks
+        opts = toks[3]
+        dummy_edge = Edge("dummy1", "dummy2")
+        # Coerce attribute types.
+        for key, value in opts.iteritems():
+            trait = dummy_edge.trait(key)
+            if trait is not None:
+                if trait.is_trait_type( List ):
+                    p = [] # List of float doublets.
+                    for t in value.split( " " ):
+                        l = t.split( "," )
+                        f = [ float(a) for a in l ]
+                        p.append( tuple(f) )
+                    opts[key] = p
+
+        return super(GodotDataParser, self)._proc_edge_stmt(toks)
 
 
     def parse_dot_file(self, file_or_filename):

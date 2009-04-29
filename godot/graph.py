@@ -1095,19 +1095,17 @@ if __name__ == "__main__":
     node2 = Node("node2", label="Node 2", shape="rect",
                  _draw_="c 5 -black e 32 18 32 18")
     edge = Edge(node1, node2)
-#    graph.nodes.extend([node1, node2])
-#    graph.edges.append(edge)
+    graph.nodes.extend([node1, node2])
+    graph.edges.append(edge)
 
 
-#    subgraph1 = Subgraph(ID="subgraph1", rank="min")
-#    subgraph1.nodes.append(Node("node3", label="Node 3"))
-#    graph.subgraphs.append(subgraph1)
-#
-#    subgraph2 = Subgraph(ID="subgraph2", rank="max")
-#    subgraph2.nodes.append(Node("node4", label="Node 4"))
-#    subgraph1.subgraphs.append(subgraph2)
+    subgraph1 = Subgraph(ID="subgraph1", rank="min")
+    subgraph1.nodes.append(Node("node3", label="Node 3"))
+    graph.subgraphs.append(subgraph1)
 
-#    graph.configure_traits()
+    subgraph2 = Subgraph(ID="subgraph2", rank="max")
+    subgraph2.nodes.append(Node("node4", label="Node 4"))
+    subgraph1.subgraphs.append(subgraph2)
 
 #    from godot.component.component_viewer import ComponentViewer
 #    viewer = ComponentViewer(component=graph.component)
@@ -1118,5 +1116,7 @@ if __name__ == "__main__":
     graph.arrange_all()
 
 #    print write_dot_graph(graph)
+
+    graph.configure_traits()
 
 # EOF +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

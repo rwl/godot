@@ -149,7 +149,7 @@ class Edge(Container):
     # and the <html:a rel="note">undirected</html:a> note.
     arrowhead = arrow_trait
 
-	# Multiplicative scale factor for arrowheads.
+  # Multiplicative scale factor for arrowheads.
     arrowsize = Float(1.0, desc="multiplicative scale factor for arrowheads",
         label="Arrow size", graphviz=True)
 
@@ -180,10 +180,10 @@ class Edge(Container):
     # is interpreted as <html:code>/bugn9/7</html:code>.
     colorscheme = color_scheme_trait
 
-	# Comments are inserted into output. Device-dependent.
+  # Comments are inserted into output. Device-dependent.
     comment = comment_trait
 
-	# If <html:span class="val">false</html:span>, the edge is not used in
+  # If <html:span class="val">false</html:span>, the edge is not used in
     # ranking the nodes.
     constraint = Bool(True, desc="if edge is used in ranking the nodes",
         graphviz=True)
@@ -202,7 +202,7 @@ class Edge(Container):
     dir = Enum("forward", "back", "both", "none", label="Direction",
         desc="edge type for drawing arrowheads", graphviz=True)
 
-	# Synonym for <html:a rel="attr">edgeURL</html:a>.
+  # Synonym for <html:a rel="attr">edgeURL</html:a>.
 #    edgehref = Alias("edgeURL", desc="synonym for edgeURL")
     edgehref = Synced(sync_to="edgeURL", graphviz=True)
 
@@ -232,7 +232,7 @@ class Edge(Container):
     edgeURL = Str("", desc="link used for the non-label parts of an edge",
         label="Edge URL", graphviz=True)#LabelStr
 
-	# Color used for text.
+  # Color used for text.
     fontcolor = fontcolor_trait
 
     # Font used for text. This very much depends on the output format and, for
@@ -256,7 +256,7 @@ class Edge(Container):
     # The lookup does support various aliases for the common fonts.
     fontname = fontname_trait
 
-	# Font size, in <html:a rel="note">points</html:a>, used for text.
+  # Font size, in <html:a rel="note">points</html:a>, used for text.
     fontsize = fontsize_trait
 
     # If <html:span class="val">true</html:span>, the head of an edge is clipped to the boundary of the head node;
@@ -265,11 +265,11 @@ class Edge(Container):
     headclip = Bool(True, desc="head of an edge to be clipped to the boundary "
         "of the head node", label="Head clip", graphviz=True)
 
-	# Synonym for <html:a rel="attr">headURL</html:a>.
+  # Synonym for <html:a rel="attr">headURL</html:a>.
     headhref = Alias("headURL", desc="synonym for headURL", graphviz=True)
 
-	# Text label to be placed near head of edge.
-	# See <html:a rel="note">undirected</html:a>.
+  # Text label to be placed near head of edge.
+  # See <html:a rel="note">undirected</html:a>.
     headlabel = Str("", desc="text label to be placed near head of edge",
         label="Head label", graphviz=True)
 
@@ -295,7 +295,7 @@ class Edge(Container):
     headURL = Str("", desc="output as part of the head label of the edge",
         label="Head URL", graphviz=True)
 
-	# Synonym for <html:a rel="attr">URL</html:a>.
+  # Synonym for <html:a rel="attr">URL</html:a>.
     href = Alias("URL", desc="synonym for URL", graphviz=True)
 
     # Text label attached to objects.
@@ -337,17 +337,17 @@ class Edge(Container):
     labelfontcolor = Color("black", desc="color used for headlabel and "
         "taillabel", label="Label font color", graphviz=True)
 
-	# Font used for headlabel and taillabel.
-	# If not set, defaults to edge's fontname.
+  # Font used for headlabel and taillabel.
+  # If not set, defaults to edge's fontname.
     labelfontname = Font("Times-Roman", desc="Font used for headlabel and "
         "taillabel", label="Label font name", graphviz=True)
 
-	# Font size, in <html:a rel="note">points</html:a>, used for headlabel and taillabel.
-	# If not set, defaults to edge's fontsize.
+  # Font size, in <html:a rel="note">points</html:a>, used for headlabel and taillabel.
+  # If not set, defaults to edge's fontsize.
     labelfontsize = Float(14.0, desc="Font size, in points, used for "
         "headlabel and taillabel", label="label_font_size", graphviz=True)
 
-	# Synonym for <html:a rel="attr">labelURL</html:a>.
+  # Synonym for <html:a rel="attr">labelURL</html:a>.
     labelhref = Alias("labelURL", desc="synonym for labelURL", graphviz=True)
 
     # If the edge has a URL or labelURL  attribute, this attribute determines
@@ -369,10 +369,10 @@ class Edge(Container):
     # defined for the edge.
     labelURL = Str(desc="link used for the label of an edge", graphviz=True)
 
-	# Specifies layers in which the node or edge is present.
+  # Specifies layers in which the node or edge is present.
     layer = layer_trait
 
-	# Preferred edge length, in inches.
+  # Preferred edge length, in inches.
     len = Float(1.0, desc="preferred edge length, in inches", graphviz=True) #0.3(fdp)
 
     # Logical head of an edge. When compound is true, if lhead is defined and
@@ -388,7 +388,7 @@ class Edge(Container):
     # the boundary of the cluster.
     ltail = Str(desc="logical tail of an edge", graphviz=True)
 
-	# Minimum edge length (rank difference between head and tail).
+  # Minimum edge length (rank difference between head and tail).
     minlen = Int(1, desc="minimum edge length", graphviz=True)
 
     # By default, the justification of multi-line labels is done within the
@@ -417,7 +417,7 @@ class Edge(Container):
     # programs, and are therefore in points. Thus, <html:code>neato -n</html:code> can accept
     # input correctly without requiring a <html:code>-s</html:code> flag and, in fact,
     # ignores any such flag.
-    pos = pos_trait
+    pos = List(Tuple(Float, Float), desc="spline control points")
 
     # Edges with the same head and the same <html:a rel="attr">samehead</html:a> value are aimed
     # at the same point on the head.
@@ -431,8 +431,8 @@ class Edge(Container):
     sametail = Str("", desc="edges with the same tail and the same sametail "
         "value are aimed at the same point on the tail", graphviz=True)
 
-	# Print guide boxes in PostScript at the beginning of
-	# routesplines if 1, or at the end if 2. (Debugging)
+  # Print guide boxes in PostScript at the beginning of
+  # routesplines if 1, or at the end if 2. (Debugging)
     showboxes = showboxes_trait
 
     # Set style for node or edge. For cluster subgraph, if "filled", the
@@ -445,11 +445,11 @@ class Edge(Container):
     tailclip = Bool(True, desc="tail of an edge to be clipped to the boundary "
         "of the tail node", graphviz=True)
 
-	# Synonym for <html:a rel="attr">tailURL</html:a>.
+  # Synonym for <html:a rel="attr">tailURL</html:a>.
     tailhref = Alias("tailURL", desc="synonym for tailURL", graphviz=True)
 
-	# Text label to be placed near tail of edge.
-	# See <html:a rel="note">undirected</html:a>.
+  # Text label to be placed near tail of edge.
+  # See <html:a rel="note">undirected</html:a>.
     taillabel = Str(desc="text label to be placed near tail of edge",
         graphviz=True)
 
@@ -463,8 +463,8 @@ class Edge(Container):
     tailtarget = Str(desc="which window of the browser is used for the URL",
         graphviz=True)
 
-	# Tooltip annotation attached to the tail of an edge. This is used only
-	# if the edge has a <html:a rel="attr">tailURL</html:a> attribute.
+  # Tooltip annotation attached to the tail of an edge. This is used only
+  # if the edge has a <html:a rel="attr">tailURL</html:a> attribute.
     tailtooltip = Str("", desc="tooltip annotation attached to the tail of an "
         "edge", label="Tail tooltip", graphviz=True)
 
@@ -476,9 +476,9 @@ class Edge(Container):
     tailURL = Str("", desc="output as part of the tail label of the edge",
         label="Tail URL", graphviz=True)
 
-	# If the object has a URL, this attribute determines which window
-	# of the browser is used for the URL.
-	# See <html:a href="http://www.w3.org/TR/html401/present/frames.html#adef-target">W3C documentation</html:a>.
+  # If the object has a URL, this attribute determines which window
+  # of the browser is used for the URL.
+  # See <html:a href="http://www.w3.org/TR/html401/present/frames.html#adef-target">W3C documentation</html:a>.
     target = target_trait
 
     # Tooltip annotation attached to the node or edge. If unset, Graphviz

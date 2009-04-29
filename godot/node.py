@@ -33,7 +33,7 @@ from enthought.traits.api import \
     HasTraits, Color, Str, Enum, Float, Font, Any, Bool, Int, File, Trait, \
     List, Tuple, ListStr, Range, Instance, on_trait_change
 
-from enthought.traits.ui.api import View, Item, Group, Tabbed
+from enthought.traits.ui.api import View, Item, Group, Tabbed, VGroup
 
 from enthought.traits.ui.api import TableEditor, InstanceEditor
 from enthought.traits.ui.table_column import ObjectColumn
@@ -55,8 +55,6 @@ from common import \
     color_trait, Alias
 
 from xdot_parser import XdotAttrParser
-
-import godot.graph
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -455,24 +453,27 @@ class Node(HasTraits):
     #--------------------------------------------------------------------------
 
     traits_view = View(
-        Tabbed(
-            Group([Item(name="vp", editor=ComponentEditor(height=50),
-                show_label=False, id=".component")],
-                ["ID", "_", "shape", "shapefile", "color", "fillcolor",
-                "colorscheme", "style", "showboxes", "tooltip", "distortion",
-                "sides", "target", "comment"],
-                Group(["_draw_", "_ldraw_"], label="Xdot", show_border=True),
-                label="Node"
+        VGroup(
+            Group(Item(name="vp", editor=ComponentEditor(height=50),
+                show_label=False, id=".component")),
+            Tabbed(
+                Group(["ID", "_", "label", "shape", "shapefile", "fontname",
+                    "fontsize", "fontcolor", "color", "fillcolor",
+                    "orientation", "style", "tooltip", "sides", "fixedsize",
+                    "width", "height", "pos"],
+                    Group(["_draw_", "_ldraw_"], label="Xdot", show_border=True),
+                    label="Node"
+                ),
+                Group(["nojustify", "distortion", "showboxes", "target",
+                    "comment", "image", "imagescale", "layer", "margin", "pin",
+                    "rects", "regular"],
+                    label="Secondary"
+                ),
+                Group(["z", "vertices", "nojustify", "colorscheme", "group",
+                    "peripheries", "URL", "samplepoints", "skew", "root"],
+                    label="Tertiary")
             ),
-            Group(["label", "fontname", "fontsize", "fontcolor", "nojustify",
-                "image", "imagescale", "layer", "margin", "nojustify",
-                "orientation", "peripheries", "pin", "rects", "regular"],
-                label="Label"
-            ),
-            Group(["fixedsize", "width", "height", "z", "pos", "vertices"],
-                label="Dimension"),
-            Group(["URL", "samplepoints", "skew", "root", "group"],
-                label="Miscellaneous")
+            layout="split"
         ),
         title="Node", id="godot.node", buttons=["OK", "Cancel", "Help"],
         resizable=True
@@ -571,10 +572,9 @@ class Node(HasTraits):
 
 #    @on_trait_change("shape")
     def arrange(self):
+        # FIXME: Circular reference avoidance.
         import godot.dot_data_parser
-
-        if not self.traits_inited():
-            return
+        import godot.graph
 
         graph = godot.graph.Graph(ID="g")
         graph.add_node(self)

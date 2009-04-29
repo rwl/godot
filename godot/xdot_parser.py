@@ -285,6 +285,7 @@ class XdotAttrParser:
 
         size = int(tokens["s"])
         self.pen.font = "%s %d" % (tokens["b"], size)
+        return []
 
 
     def proc_style(self, tokens):

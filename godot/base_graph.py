@@ -111,7 +111,7 @@ class BaseGraph ( HasTraits ):
 #    level = Int(0, desc="level in the subgraph hierarchy")
 
     # Padding to use for pretty string output.
-    padding = Str("    ", desc="padding for pretty printing")
+    padding = Str("        ", desc="padding for pretty printing")
 
     # A dictionary containing the Graphviz executable names as keys
     # and their paths as values.  See the trait initialiser.
@@ -400,12 +400,18 @@ class BaseGraph ( HasTraits ):
         """ Sets for the _draw_ and _ldraw_ attributes for each of the graph
             sub-elements by processing the xdot format of the graph.
         """
+        import godot.dot_data_parser
+
+        parser = godot.dot_data_parser.GodotDataParser()
+
         xdot_data = self.create( format = "xdot" )
+        print "GRAPH DOT:\n", str( self )
+        print "XDOT DATA:\n", xdot_data
 
-        print "XDOT DATA:\n\n", xdot_data
-
-        parser = godot.dot_data_parser.DotParser()
-        xdot_graph = parser.parse_dot_data( xdot_data )
+        parser.dotparser.parseWithTabs()
+        ndata = xdot_data.replace( "\\\n", "" )
+        tokens = parser.dotparser.parseString( ndata )[0]
+        parser.build_graph( graph=self, tokens=tokens[3] )
 
 
     def add_node(self, node_or_ID, **kwds):
@@ -477,7 +483,9 @@ class BaseGraph ( HasTraits ):
             if not self.strict:
                 self.edges.append(edge)
             else:
-                raise NotImplementedError
+                self.edges.append(edge)
+                # FIXME: Implement strict graphs.
+#                raise NotImplementedError
         else:
             self.edges.append(edge)
 
