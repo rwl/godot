@@ -165,7 +165,7 @@ edge_table_editor = TableEditor(
 #  Items:
 #------------------------------------------------------------------------------
 
-view_port_item = Item(name="vp", editor=ComponentEditor(height=200),
+view_port_item = Item(name="vp", editor=ComponentEditor(height=80),
     show_label=False, id=".viewport")
 
 arrange_item = Item("arrange", show_label=False)
@@ -278,7 +278,7 @@ tabbed_view = View(
             algorithm_group, children_group,
             output_group,
             dock="tab"
-        ), layout="split"
+        ), layout="split", id=".splitter"
     ),
     id="godot.graph.tabbed_view",
     buttons=["OK", "Cancel", "Help"],

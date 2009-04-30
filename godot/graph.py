@@ -937,12 +937,11 @@ class Graph(BaseGraph):
     #  Trait initialisers:
     #--------------------------------------------------------------------------
 
-#    def _component_default(self):
-#        """ Trait initialiser.  Overrides the base class to use a Canvas for
-#            the root Graph.
-#        """
-#        return Canvas( bgcolor   = "white",#"lightsteelblue",
-#                       draw_axes = False)
+    def _component_default(self):
+        """ Trait initialiser.  Overrides the base class to use a Canvas
+            for the root Graph.
+        """
+        return Canvas( draw_axes=True, bgcolor="lightsteelblue")
 
 
     def _epsilon_default(self):
@@ -1056,11 +1055,12 @@ if __name__ == "__main__":
 
     graph = Graph(ID="Foo", strict=True, directed=False, label="Foo Graph")
 
-#    node1 = Node("node1", label="Node 1")
-#    graph.add_node( node1 )
+    node1 = Node("node1", label="Node 1", shape="circle")
+    graph.add_node( node1 )
 
-#    node2 = Node("node2", label="Node 2", shape="rect",
-#                 _draw_="c 5 -black e 32 18 32 18")
+    node2 = Node("node2", label="Node 2", shape="rect")
+    graph.add_node( node2 )
+
 #    edge = Edge(node1, node2)
 #    graph.nodes.extend([node1, node2])
 #    graph.edges.append(edge)

@@ -31,7 +31,7 @@ import uuid
 
 from enthought.traits.api import \
     HasTraits, Color, Str, Enum, Float, Font, Any, Bool, Int, File, Trait, \
-    List, Tuple, ListStr, Range, Instance, on_trait_change
+    List, Tuple, ListStr, Range, Instance, Button, on_trait_change
 
 from enthought.traits.ui.api import View, Item, Group, Tabbed, VGroup
 
@@ -110,6 +110,9 @@ class Node(HasTraits):
 
     # A view into a sub-region of the canvas.
     vp = Instance(Viewport, desc="a view of a sub-region of the canvas")
+
+    # Use Graphviz to arrange all graph components.
+    arrange = Button("Arrange All")
 
     #--------------------------------------------------------------------------
     #  Graphviz dot language trait definitions:
@@ -456,7 +459,8 @@ class Node(HasTraits):
     traits_view = View(
         VGroup(
             Group(Item(name="vp", editor=ComponentEditor(height=100),
-                show_label=False, id=".component")),
+                show_label=False, id=".component"),
+                Item("arrange", show_label=False)),
             Tabbed(
                 Group(["ID", "_", "label", "shape", "shapefile", "fontname",
                     "fontsize", "fontcolor", "color", "fillcolor",
@@ -473,6 +477,12 @@ class Node(HasTraits):
                 Group(["z", "vertices", "nojustify", "colorscheme", "group",
                     "peripheries", "URL", "samplepoints", "skew", "root"],
                     label="Tertiary"),
+                Group(Item("component", show_label=False, style="custom"),
+                    label="Component", scrollable=True),
+                Group(Item("drawing", show_label=False, style="custom"),
+                    label="Drawing", scrollable=True),
+                Group(Item("label_drawing", show_label=False, style="custom"),
+                    label="Label Drawing", scrollable=True),
                 dock="tab"
             ),
             layout="split"
@@ -553,7 +563,8 @@ class Node(HasTraits):
     def _component_default(self):
         """ Trait initialiser.
         """
-        component = Container(fit_window=False, auto_size=True)
+        component = Container(fit_window=False, auto_size=True,
+            bgcolor="green")#, position=list(self.pos) )
         component.tools.append( MoveTool(component) )
 #        component.tools.append( TraitsTool(component) )
         return component
@@ -569,7 +580,7 @@ class Node(HasTraits):
 
         vp.tools.append(ViewportPanTool(vp))
 
-        self.arrange()
+#        self.arrange_all()
 
         return vp
 
@@ -577,8 +588,8 @@ class Node(HasTraits):
     #  Event handlers:
     #--------------------------------------------------------------------------
 
-#    @on_trait_change("shape")
-    def arrange(self):
+    @on_trait_change("arrange")
+    def arrange_all(self):
         # FIXME: Circular reference avoidance.
         import godot.dot_data_parser
         import godot.graph
@@ -627,7 +638,7 @@ class Node(HasTraits):
 #        container = Container(bounds=[max_x, max_y])
 #        self.bounds = bounds=[max_x, max_y]
 
-        container = Container(fit_window=False, auto_size=True)
+        container = Container(fit_window=False, auto_size=True, bgcolor="blue")
         container.add( *components )
         self.drawing = container
 
@@ -642,7 +653,7 @@ class Node(HasTraits):
         components = XdotAttrParser().parse_xdot_data(new)
         print "COMPONENTS:", components
 
-        container = Container(fit_window=False, auto_size=True)#bounds=[200, 200])
+        container = Container(fit_window=False, auto_size=True, bgcolor="red")#bounds=[200, 200])
         container.add( *components )
         self.label_drawing = container
 
@@ -651,11 +662,13 @@ class Node(HasTraits):
         """ Handles the container of drawing components changing. """
 
         if old is not None:
-            self.component.remove(old)
+            self.component.remove( old )
         if new is not None:
 #            new.bgcolor="pink"
-            self.component.add(new)
+            self.component.add( new )
 
+        w, h = self.component.bounds
+        self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
         self.component.request_redraw()
 
 
@@ -667,6 +680,22 @@ class Node(HasTraits):
         if new is not None:
             self.component.add(new)
 
+        w, h = self.component.bounds
+        self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
+        self.component.request_redraw()
+
+
+    @on_trait_change("component.position")
+    def _on_position_change(self, new):
+        """ Handles the poition of the component changing.
+        """
+        w, h = self.component.bounds
+        self.pos = tuple([ new[0] + w / 2, new[1] + h / 2 ])
+
+
+    def _pos_changed(self, new):
+        w, h = self.component.bounds
+        self.component.position = [ new[0] - w / 2, new[1] - h / 2 ]
         self.component.request_redraw()
 
 #------------------------------------------------------------------------------
@@ -682,8 +711,8 @@ if __name__ == "__main__":
     from godot.component.component_viewer import ComponentViewer
 
     node = Node( "node1" )
-    node.shape = "triangle"
-    node.arrange()
+    node.shape = "circle"
+    node.arrange_all()
     node.configure_traits()
     viewer = ComponentViewer(component=node.component)
 #    viewer.configure_traits()
