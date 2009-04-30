@@ -608,7 +608,7 @@ class BaseGraph ( HasTraits ):
 
 
     @on_trait_change("nodes,edges")
-    def _on_list(self, old, new):
+    def _on_node_or_edge(self, old, new):
         """ Handles the list of nodes being set.
         """
         self.component.remove( *[r.component for r in old] )
@@ -617,11 +617,11 @@ class BaseGraph ( HasTraits ):
 
 
     @on_trait_change("nodes_items,edges_items")
-    def _on_list_items(self, event):
+    def _on_node_or_edge_items(self, event):
         """ Handles addition and removal of nodes.
         """
-        for node in event.added:
-            node.parse_xdot_drawing_directive("c 5 -black e 18 18 18 18")
+#        for node in event.added:
+#            node.parse_xdot_drawing_directive("c 5 -black e 18 36 18 18")
 
         self.component.add( *[a.component for a in event.added] )
         self.component.remove( *[r.component for r in event.removed] )

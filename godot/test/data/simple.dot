@@ -1,0 +1,4 @@
+digraph testG {
+        start [shape=diamond];
+        end [shape=circle];
+}

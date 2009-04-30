@@ -46,6 +46,7 @@ from enthought.naming.unique_name import make_unique_name
 from enthought.enable.api import Container, Viewport
 from enthought.enable.component_editor import ComponentEditor
 from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
+from enthought.enable.tools.api import MoveTool, TraitsTool
 
 from common import \
     color_scheme_trait, comment_trait, fontcolor_trait, fontname_trait, \
@@ -552,7 +553,10 @@ class Node(HasTraits):
     def _component_default(self):
         """ Trait initialiser.
         """
-        return Container(fit_window=False, auto_size=True)
+        component = Container(fit_window=False, auto_size=True)
+        component.tools.append( MoveTool(component) )
+#        component.tools.append( TraitsTool(component) )
+        return component
 
 
     def _vp_default(self):
@@ -561,9 +565,11 @@ class Node(HasTraits):
         vp = Viewport(component=self.component)
         vp.enable_zoom=True
 
-        vp.view_position = [-10, -10]
+#        vp.view_position = [-10, -10]
 
         vp.tools.append(ViewportPanTool(vp))
+
+        self.arrange()
 
         return vp
 
@@ -647,6 +653,7 @@ class Node(HasTraits):
         if old is not None:
             self.component.remove(old)
         if new is not None:
+#            new.bgcolor="pink"
             self.component.add(new)
 
         self.component.request_redraw()
@@ -674,11 +681,11 @@ if __name__ == "__main__":
 
     from godot.component.component_viewer import ComponentViewer
 
-    node = Node("node1", _draw_="c 5 -black e 32 18 32 18")
+    node = Node( "node1" )
     node.shape = "triangle"
     node.arrange()
     node.configure_traits()
-#    viewer = ComponentViewer(component=node.component)
+    viewer = ComponentViewer(component=node.component)
 #    viewer.configure_traits()
 
 # EOF +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -101,14 +101,14 @@ class Text(Component):
 
             gc.set_fill_color(self.pen.color_)
 
-            x = self.text_x - (self.text_w/2)
-            y = self.text_y# - (font.size/2)
+            x = self.text_x - ( self.text_w / 2 )
+            y = self.text_y - ( font.size / 2 )
 
             # Show text at the same scale as the graphics context
             ctm = gc.get_ctm()
             if hasattr(ctm, "__len__") and len(ctm) == 6:
-                scale = sqrt( (ctm[0]+ctm[1]) * (ctm[0]+ctm[1]) / 2.0 + \
-                              (ctm[2]+ctm[3]) * (ctm[2]+ctm[3]) / 2.0 )
+                scale = sqrt( (ctm[0] + ctm[1]) * (ctm[0] + ctm[1]) / 2.0 + \
+                              (ctm[2] + ctm[3]) * (ctm[2] + ctm[3]) / 2.0 )
             elif hasattr(gc, "get_ctm_scale"):
                 scale = gc.get_ctm_scale()
             else:
@@ -122,15 +122,20 @@ class Text(Component):
 
     @on_trait_change("pen.+,text_x,text_y,text_w,justification,text")
     def _update(self):
-        if self.pen is None: return
-        x = self.text_x - (self.text_w/2)
-        x2 = x+self.text_w
-        y = self.text_y# - (font.size/2)
-        font = str_to_font(str(self.pen.font))
-        y2 = y+font.size
+        if self.pen is None:
+            return
+
+        x = self.text_x - (self.text_w / 2)
+        x2 = x + self.text_w
+
+        font = str_to_font( str(self.pen.font) )
+
+        y = self.text_y - (font.size / 2)
+        y2 = y + font.size
+
         self.position = [x, y]
-        # If bounds are set to 0, horizontal/vertical lines will not render
-        self.bounds = [max(x2-x, 1), max(y2-y, 1)]
+        # If bounds are set to 0, horizontal/vertical lines will not render.
+        self.bounds = [max(x2 - x, 1), max(y2 - y, 1)]
 
         self.request_redraw()
 

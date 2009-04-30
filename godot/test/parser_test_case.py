@@ -34,6 +34,7 @@ from os.path import join, dirname
 from godot.api \
     import Graph, Subgraph, Cluster, Node, Edge, GodotDataParser
 
+SIMPLE_GRAPH = join(dirname(__file__), "data", "simple.dot")
 CLUSTER_GRAPH = join(dirname(__file__), "data", "clust.dot")
 COLORS_GRAPH = join(dirname(__file__), "data", "colors.dot")
 
@@ -49,11 +50,11 @@ class ParserTestCase(unittest.TestCase):
         """ Test parsing of a graph with nested clusters.
         """
         parser = GodotDataParser()
-        graph = parser.parse_dot_file(CLUSTER_GRAPH)
+        graph = parser.parse_dot_file(SIMPLE_GRAPH)
 #        self.failUnless(graph.name == "testG")
-#        graph.configure_traits()
+        graph.configure_traits()
 #        graph.save_to_file("/tmp/clust.dot")
-        print graph.clusters[0]
+#        print graph.clusters[0]
 
 
 #    def test_parse_colors(self):

@@ -1056,8 +1056,8 @@ if __name__ == "__main__":
 
     graph = Graph(ID="Foo", strict=True, directed=False, label="Foo Graph")
 
-    node1 = Node("node1", label="Node 1")
-    graph.add_node( node1 )
+#    node1 = Node("node1", label="Node 1")
+#    graph.add_node( node1 )
 
 #    node2 = Node("node2", label="Node 2", shape="rect",
 #                 _draw_="c 5 -black e 32 18 32 18")
