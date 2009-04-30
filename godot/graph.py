@@ -46,8 +46,6 @@ from enthought.enable.api import Canvas, Viewport, Container
 from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
 from enthought.enable.component_editor import ComponentEditor
 
-from dot2tex.dotparsing import find_graphviz
-
 from common import \
     Alias, color_scheme_trait, rectangle_trait, fontcolor_trait, \
     fontname_trait, fontsize_trait, label_trait, point_trait, pointf_trait, \
@@ -946,16 +944,6 @@ class Graph(BaseGraph):
 #        return Canvas( bgcolor   = "white",#"lightsteelblue",
 #                       draw_axes = False)
 
-    def _programs_default(self):
-        """ Trait initaliser.
-        """
-        progs = find_graphviz()
-        if progs is None:
-            logger.warning("GraphViz's executables not found")
-            return {}
-        else:
-            return progs
-
 
     def _epsilon_default(self):
         """ Trait initialiser. """
@@ -1049,26 +1037,6 @@ class Graph(BaseGraph):
             each_edge._nodes = all_nodes
 
 
-    def _program_changed(self, new):
-        """ Handles the Graphviz layout program selection changing.
-        """
-        progs = self.progs
-
-        if not progs.has_key(prog):
-            logger.warning( 'GraphViz\'s executable "%s" not found' % prog )
-
-        if not os.path.exists( progs[prog] ) or not \
-            os.path.isfile( progs[prog] ):
-            logger.warning( "GraphViz's executable '%s' is not a "
-                "file or doesn't exist" % progs[prog] )
-
-
-    def _component_changed(self, new):
-        """ Handles the graph canvas changing.
-        """
-        self.vp.component = new
-
-
 #    def _bgcolor_changed(self, new):
 #        """ Handles the canvas background colour.
 #        """
@@ -1084,28 +1052,27 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler(sys.stdout))
     logger.setLevel(logging.DEBUG)
 
-    from godot.graph import Graph
+#    from godot.graph import Graph
 
-    graph = Graph(ID="Foo", strict=True, directed=False,
-        label="Foo Graph",
-#        bgcolor="pink"
-    )
+    graph = Graph(ID="Foo", strict=True, directed=False, label="Foo Graph")
 
-    node1 = Node("node1", label="Node 1",  _draw_="c 5 -black e 32 18 32 18")
-    node2 = Node("node2", label="Node 2", shape="rect",
-                 _draw_="c 5 -black e 32 18 32 18")
-    edge = Edge(node1, node2)
-    graph.nodes.extend([node1, node2])
-    graph.edges.append(edge)
+    node1 = Node("node1", label="Node 1")
+    graph.add_node( node1 )
+
+#    node2 = Node("node2", label="Node 2", shape="rect",
+#                 _draw_="c 5 -black e 32 18 32 18")
+#    edge = Edge(node1, node2)
+#    graph.nodes.extend([node1, node2])
+#    graph.edges.append(edge)
 
 
-    subgraph1 = Subgraph(ID="subgraph1", rank="min")
-    subgraph1.nodes.append(Node("node3", label="Node 3"))
-    graph.subgraphs.append(subgraph1)
-
-    subgraph2 = Subgraph(ID="subgraph2", rank="max")
-    subgraph2.nodes.append(Node("node4", label="Node 4"))
-    subgraph1.subgraphs.append(subgraph2)
+#    subgraph1 = Subgraph(ID="subgraph1", rank="min")
+#    subgraph1.nodes.append(Node("node3", label="Node 3"))
+#    graph.subgraphs.append(subgraph1)
+#
+#    subgraph2 = Subgraph(ID="subgraph2", rank="max")
+#    subgraph2.nodes.append(Node("node4", label="Node 4"))
+#    subgraph1.subgraphs.append(subgraph2)
 
 #    from godot.component.component_viewer import ComponentViewer
 #    viewer = ComponentViewer(component=graph.component)
@@ -1113,7 +1080,7 @@ if __name__ == "__main__":
 
 #    graph.write("/tmp/graph.xdot", "dot", "xdot")
 
-    graph.arrange_all()
+#    graph.arrange_all()
 
 #    print write_dot_graph(graph)
 

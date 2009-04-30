@@ -99,7 +99,7 @@ class Text(Component):
             font = str_to_font(str(self.pen.font))
             gc.set_font(font)
 
-            gc.set_fill_color(self.pen.colour_)
+            gc.set_fill_color(self.pen.color_)
 
             x = self.text_x - (self.text_w/2)
             y = self.text_y# - (font.size/2)
@@ -143,7 +143,7 @@ class Text(Component):
 #------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    from pylon.ui.graph.component_viewer import ComponentViewer
+    from godot.component.component_viewer import ComponentViewer
 
     text = Text(
         pen=Pen(), text="Foo",

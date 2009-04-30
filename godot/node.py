@@ -454,7 +454,7 @@ class Node(HasTraits):
 
     traits_view = View(
         VGroup(
-            Group(Item(name="vp", editor=ComponentEditor(height=50),
+            Group(Item(name="vp", editor=ComponentEditor(height=100),
                 show_label=False, id=".component")),
             Tabbed(
                 Group(["ID", "_", "label", "shape", "shapefile", "fontname",
@@ -471,7 +471,8 @@ class Node(HasTraits):
                 ),
                 Group(["z", "vertices", "nojustify", "colorscheme", "group",
                     "peripheries", "URL", "samplepoints", "skew", "root"],
-                    label="Tertiary")
+                    label="Tertiary"),
+                dock="tab"
             ),
             layout="split"
         ),
@@ -610,10 +611,8 @@ class Node(HasTraits):
 
     @on_trait_change("_draw_")
     def parse_xdot_drawing_directive(self, new):
-        """ Parses the drawing directive, updating the node components. """
-
-        print "_draw_", new
-
+        """ Parses the drawing directive, updating the node components.
+        """
         components = XdotAttrParser().parse_xdot_data(new)
 
 #        max_x = max([c.bounds[0] for c in components] + [1])
@@ -630,8 +629,8 @@ class Node(HasTraits):
     @on_trait_change("_ldraw_")
     def parse_xdot_label_directive(self, new):
         """ Parses the label drawing directive, updating the label
-        components. """
-
+        components.
+        """
         print "_ldraw_", new
 
         components = XdotAttrParser().parse_xdot_data(new)

@@ -33,6 +33,8 @@ from enthought.traits.api import \
 from enthought.traits.ui.api import \
     View, Item, Group, Tabbed, HGroup, VGroup
 
+from enthought.enable.component_editor import ComponentEditor
+
 from godot.base_graph \
     import BaseGraph
 
@@ -126,9 +128,14 @@ class Subgraph(BaseGraph):
 
     traits_view = View(
         VGroup(
-            HGroup(Item("ID"), Item("rank")),
-            Tabbed(nodes_item, edges_item, dock="tab"),
-#            subgraphs_notebook_group
+            Group(Item("vp", editor=ComponentEditor(height=100),
+                       show_label=False),
+                  Item("arrange", show_label=False)),
+            VGroup(
+                HGroup(Item("ID"), Item("rank")),
+                Tabbed(nodes_item, edges_item, dock="tab"),
+    #            subgraphs_notebook_group
+            ), layout="split"
         ),
         title="Subgraph", id="godot.subgraph",
         buttons=["OK", "Cancel", "Help"],

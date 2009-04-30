@@ -31,8 +31,8 @@ import logging
 import tempfile
 import subprocess
 
-from enthought.traits.api \
-    import HasTraits, Str, List, Instance, Bool, Property, Constant, \
+from enthought.traits.api import \
+    HasTraits, Str, List, Instance, Bool, Property, Constant, Button, \
     ReadOnly, Dict, TraitListEvent, Int, Enum, on_trait_change
 
 from enthought.enable.api \
@@ -40,6 +40,8 @@ from enthought.enable.api \
 
 from enthought.enable.tools.api \
     import ViewportPanTool, ViewportZoomTool
+
+from dot2tex.dotparsing import find_graphviz
 
 from node \
     import Node
@@ -123,6 +125,9 @@ class BaseGraph ( HasTraits ):
 
     # Format for writing to file.
     format = Enum(FORMATS, desc="format used when writing to file")
+
+    # Use Graphviz to arrange all graph components.
+    arrange = Button("Arrange All")
 
     #--------------------------------------------------------------------------
     #  Enable trait definitions.
@@ -261,10 +266,21 @@ class BaseGraph ( HasTraits ):
         return godot.cluster.Cluster(ID="cluster_default")
 
 
+    def _programs_default(self):
+        """ Trait initaliser.
+        """
+        progs = find_graphviz()
+        if progs is None:
+            logger.warning("GraphViz's executables not found")
+            return {}
+        else:
+            return progs
+
+
     def _component_default(self):
         """ Trait initialiser.
         """
-        return Container(fit_window=False, auto_size=True)
+        return Container(draw_axes=True, fit_window=False, auto_size=True)
 
 
     def _vp_default(self):
@@ -396,6 +412,7 @@ class BaseGraph ( HasTraits ):
         return stdout_output
 
 
+    @on_trait_change("arrange")
     def arrange_all(self):
         """ Sets for the _draw_ and _ldraw_ attributes for each of the graph
             sub-elements by processing the xdot format of the graph.
@@ -527,6 +544,27 @@ class BaseGraph ( HasTraits ):
     #  "BaseGraph" interface:
     #--------------------------------------------------------------------------
 
+
+    def _program_changed(self, new):
+        """ Handles the Graphviz layout program selection changing.
+        """
+        progs = self.progs
+
+        if not progs.has_key(prog):
+            logger.warning( 'GraphViz\'s executable "%s" not found' % prog )
+
+        if not os.path.exists( progs[prog] ) or not \
+            os.path.isfile( progs[prog] ):
+            logger.warning( "GraphViz's executable '%s' is not a "
+                "file or doesn't exist" % progs[prog] )
+
+
+    def _component_changed(self, new):
+        """ Handles the graph canvas changing.
+        """
+        self.vp.component = new
+
+
 #    @on_trait_change("nodes,nodes_items")
 #    def remove_duplicates(self, new):
 #        """ Ensures node ID uniqueness.
@@ -569,20 +607,24 @@ class BaseGraph ( HasTraits ):
 #                self._update_id_node_map()
 
 
-    def _nodes_items_changed(self, event):
+    @on_trait_change("nodes,edges")
+    def _on_list(self, old, new):
+        """ Handles the list of nodes being set.
+        """
+        self.component.remove( *[r.component for r in old] )
+        self.component.add( *[a.component for a in new] )
+        self.component.request_redraw()
+
+
+    @on_trait_change("nodes_items,edges_items")
+    def _on_list_items(self, event):
         """ Handles addition and removal of nodes.
         """
-        # Add new nodes to the canvas.
-        from enthought.enable.primitives.api import Box
-        from enthought.enable.tools.api import MoveTool
-
         for node in event.added:
-#            box = Box(color="steelblue", border_color="darkorchid",
-#                border_size=1, bounds=[50, 50], position=[10, 10])
-#            box.tools.append(MoveTool(box))
-#            self.component.add(box)
-            self.component.add(node.component)
+            node.parse_xdot_drawing_directive("c 5 -black e 18 18 18 18")
 
+        self.component.add( *[a.component for a in event.added] )
+        self.component.remove( *[r.component for r in event.removed] )
         self.component.request_redraw()
 
 

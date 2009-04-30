@@ -28,7 +28,7 @@
 
 import uuid
 
-from enthought.traits.ui.api import View, Group, Item, Tabbed, Label
+from enthought.traits.ui.api import View, Group, VGroup, Item, Tabbed, Label
 from enthought.traits.ui.api import TableEditor, InstanceEditor, ListEditor
 from enthought.traits.ui.table_column import ObjectColumn
 from enthought.traits.ui.extras.checkbox_column import CheckboxColumn
@@ -165,8 +165,10 @@ edge_table_editor = TableEditor(
 #  Items:
 #------------------------------------------------------------------------------
 
-view_port_item = Item(name="vp", editor=ComponentEditor(), show_label=False,
-    id=".viewport")
+view_port_item = Item(name="vp", editor=ComponentEditor(height=200),
+    show_label=False, id=".viewport")
+
+arrange_item = Item("arrange", show_label=False)
 
 nodes_item = Item(name="nodes", editor=node_table_editor, show_label=False)
 edges_item = Item(name="edges", editor=edge_table_editor, show_label=False)
@@ -265,17 +267,19 @@ graph_view = View(
 )
 
 tabbed_view = View(
-    Tabbed(
-        Group(view_port_item, label="Graph"),
-        Group(nodes_item, label="Nodes"),
-        Group(edges_item, label="Edges"),
-        subgraphs_notebook_group,
-        clusters_notebook_group,
-        appearance_group, layout_group,
-        algorithm_group, children_group,
-        output_group
+    VGroup(
+        Group(view_port_item, arrange_item),
+        Tabbed(
+            Group(nodes_item, label="Nodes"),
+            Group(edges_item, label="Edges"),
+            subgraphs_notebook_group,
+            clusters_notebook_group,
+            appearance_group, layout_group,
+            algorithm_group, children_group,
+            output_group,
+            dock="tab"
+        ), layout="split"
     ),
-    dock="tab",
     id="godot.graph.tabbed_view",
     buttons=["OK", "Cancel", "Help"],
     resizable=True, icon=frame_icon
