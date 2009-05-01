@@ -47,6 +47,7 @@ from enthought.enable.api import Container, Viewport
 from enthought.enable.component_editor import ComponentEditor
 from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
 from enthought.enable.tools.api import MoveTool, TraitsTool
+from enthought.kiva.fonttools.font import str_to_font
 
 from common import \
     color_scheme_trait, comment_trait, fontcolor_trait, fontname_trait, \
@@ -56,6 +57,8 @@ from common import \
     color_trait, Alias
 
 from xdot_parser import XdotAttrParser
+
+from util import move_to_origin
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -477,12 +480,12 @@ class Node(HasTraits):
                 Group(["z", "vertices", "nojustify", "colorscheme", "group",
                     "peripheries", "URL", "samplepoints", "skew", "root"],
                     label="Tertiary"),
-                Group(Item("component", show_label=False, style="custom"),
-                    label="Component", scrollable=True),
-                Group(Item("drawing", show_label=False, style="custom"),
-                    label="Drawing", scrollable=True),
-                Group(Item("label_drawing", show_label=False, style="custom"),
-                    label="Label Drawing", scrollable=True),
+#                Group(Item("component", show_label=False, style="custom"),
+#                    label="Component", scrollable=True),
+#                Group(Item("drawing", show_label=False, style="custom"),
+#                    label="Drawing", scrollable=True),
+#                Group(Item("label_drawing", show_label=False, style="custom"),
+#                    label="Label Drawing", scrollable=True),
                 dock="tab"
             ),
             layout="split"
@@ -500,6 +503,7 @@ class Node(HasTraits):
         """
         self.ID = ID
         super(Node, self).__init__(**traits)
+#        self.arrange_all()
 
 
     def __str__(self):
@@ -575,13 +579,8 @@ class Node(HasTraits):
         """
         vp = Viewport(component=self.component)
         vp.enable_zoom=True
-
 #        vp.view_position = [-10, -10]
-
         vp.tools.append(ViewportPanTool(vp))
-
-#        self.arrange_all()
-
         return vp
 
     #--------------------------------------------------------------------------
@@ -590,6 +589,8 @@ class Node(HasTraits):
 
     @on_trait_change("arrange")
     def arrange_all(self):
+        """ Arrange the components of the node using Graphviz.
+        """
         # FIXME: Circular reference avoidance.
         import godot.dot_data_parser
         import godot.graph
@@ -632,35 +633,50 @@ class Node(HasTraits):
         """
         components = XdotAttrParser().parse_xdot_data(new)
 
-#        max_x = max([c.bounds[0] for c in components] + [1])
-#        max_y = max([c.bounds[1] for c in components] + [1])
-#
-#        container = Container(bounds=[max_x, max_y])
+        max_x = max( [c.bounds[0] for c in components] + [1] )
+        max_y = max( [c.bounds[1] for c in components] + [1] )
+
+        pos_x = min( [c.x for c in components] )
+        pos_y = min( [c.y for c in components] )
+
+        move_to_origin(components)
+
+        container = Container(auto_size=True,
+            position=[pos_x-self.pos[0], pos_y-self.pos[1]],
+            bgcolor="blue")
 #        self.bounds = bounds=[max_x, max_y]
 
-        container = Container(fit_window=False, auto_size=True, bgcolor="blue")
+#        container = Container(fit_window=False, auto_size=True, bgcolor="blue")
+
         container.add( *components )
+
         self.drawing = container
 
 
-    @on_trait_change("_ldraw_")
+#    @on_trait_change("_ldraw_")
     def parse_xdot_label_directive(self, new):
         """ Parses the label drawing directive, updating the label
-        components.
+            components.
         """
-        print "_ldraw_", new
-
         components = XdotAttrParser().parse_xdot_data(new)
-        print "COMPONENTS:", components
 
-        container = Container(fit_window=False, auto_size=True, bgcolor="red")#bounds=[200, 200])
+        pos_x = min( [c.x for c in components] )
+        pos_y = min( [c.y for c in components] )
+
+        move_to_origin(components)
+
+        container = Container(auto_size=True,
+            position=[pos_x-self.pos[0], pos_y-self.pos[1]],
+            bgcolor="red")
+
         container.add( *components )
+
         self.label_drawing = container
 
 
     def _drawing_changed(self, old, new):
-        """ Handles the container of drawing components changing. """
-
+        """ Handles the container of drawing components changing.
+        """
         if old is not None:
             self.component.remove( old )
         if new is not None:
@@ -669,12 +685,13 @@ class Node(HasTraits):
 
         w, h = self.component.bounds
         self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
+#        self.component.position = [ self.pos[0], self.pos[1] ]
         self.component.request_redraw()
 
 
     def _label_drawing_changed(self, old, new):
-        """ Handles the container of label components changing. """
-
+        """ Handles the container of label components changing.
+        """
         if old is not None:
             self.component.remove(old)
         if new is not None:
@@ -682,6 +699,7 @@ class Node(HasTraits):
 
         w, h = self.component.bounds
         self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
+#        self.component.position = list( self.pos )
         self.component.request_redraw()
 
 
@@ -691,11 +709,15 @@ class Node(HasTraits):
         """
         w, h = self.component.bounds
         self.pos = tuple([ new[0] + w / 2, new[1] + h / 2 ])
+#        self.pos = tuple( new )
 
 
     def _pos_changed(self, new):
+        """ Handles the Graphviz position attribute changing.
+        """
         w, h = self.component.bounds
         self.component.position = [ new[0] - w / 2, new[1] - h / 2 ]
+#        self.component.position = list( new )
         self.component.request_redraw()
 
 #------------------------------------------------------------------------------

@@ -78,7 +78,7 @@ node_table_editor = TableEditor(
         ObjectColumn(name="height"),
         ObjectColumn(name="pos"),
         ObjectColumn(name="style"),
-        ObjectColumn(name="z")
+        ObjectColumn(name="_draw_")
     ],
     other_columns = [  # not initially displayed
         ObjectColumn(name="sides")
@@ -115,7 +115,7 @@ def edge_factory(**row_factory_kw):
             tail_node = graph.nodes[0]
             head_node = graph.nodes[1]
 
-        return godot.Edge(tail_node, head_node, _nodes=graph.nodes)
+        return godot.edge.Edge(tail_node, head_node, _nodes=graph.nodes)
     else:
         return None
 
@@ -139,7 +139,8 @@ edge_table_editor = TableEditor(
         ObjectColumn(name="headlabel"),
         ObjectColumn(name="arrowhead"),
         ObjectColumn(name="taillabel"),
-        ObjectColumn(name="arrowtail")
+        ObjectColumn(name="arrowtail"),
+        ObjectColumn(name="_draw_")
     ],
     other_columns = [  # not initially displayed
         ObjectColumn(name="color"),

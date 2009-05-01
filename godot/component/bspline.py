@@ -219,7 +219,7 @@ class BSpline(Component):
         y2 = max(y_points)
         self.position = [x, y]
         # If bounds are set to 0, horizontal/vertical lines will not render
-        self.bounds = [max(x2-x,1), max(y2-y,1)]
+        self.bounds = [max(x2-x, 5), max(y2-y, 5)]
 
         self.request_redraw()
 

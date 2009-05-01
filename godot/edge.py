@@ -22,18 +22,21 @@
 
 from enthought.traits.api import \
     HasTraits, Color, Str, Enum, Float, Font, Any, Bool, Int, File, Trait, \
-    List, Tuple, ListStr, Instance, Undefined, Property
+    List, Tuple, ListStr, Instance, Undefined, Property, Button, \
+    on_trait_change
 
-from enthought.traits.ui.api import TableEditor, View, Group, Item, Tabbed
+from enthought.traits.ui.api import \
+    InstanceEditor, TableEditor, View, Group, Item, Tabbed, VGroup
 
-from enthought.traits.ui.api import TableEditor, InstanceEditor
 from enthought.traits.ui.table_column import ObjectColumn
 from enthought.traits.ui.extras.checkbox_column import CheckboxColumn
 
 from enthought.traits.ui.table_filter import \
     EvalFilterTemplate, MenuFilterTemplate, RuleFilterTemplate, RuleTableFilter
 
-from enthought.enable.api import Container
+from enthought.enable.api import Container, Viewport
+from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
+from enthought.enable.component_editor import ComponentEditor
 from enthought.naming.unique_name import make_unique_name
 
 from node import Node
@@ -44,6 +47,10 @@ from common import \
     nojustify_trait, peripheries_trait, pos_trait, rectangle_trait, \
     root_trait, showboxes_trait, target_trait, tooltip_trait, url_trait, \
     pointf_trait, point_trait, color_trait, Synced
+
+from xdot_parser import XdotAttrParser
+
+from util import move_to_origin
 
 #------------------------------------------------------------------------------
 #  Trait definitions:
@@ -102,7 +109,7 @@ port_pos_trait = Str(desc="port position", graphviz=True)
 #  "Edge" class:
 #------------------------------------------------------------------------------
 
-class Edge(Container):
+class Edge(HasTraits):
     """ Defines a graph edge. """
 
     #--------------------------------------------------------------------------
@@ -139,6 +146,37 @@ class Edge(Container):
     _tdraw_ = Str(desc="edge tail arrowhead drawing directive.", label="tdraw")
     _hldraw_ = Str(desc="edge head label drawing directive.", label="hldraw")
     _tldraw_ = Str(desc="edge tail label drawing directive.", label="tldraw")
+
+    #--------------------------------------------------------------------------
+    #  Enable trait definitions:
+    #--------------------------------------------------------------------------
+
+    # Container of drawing components, typically the edge spline.
+    drawing = Instance(Container)
+
+    # Container of label components.
+    label_drawing = Instance(Container)
+
+    # Container of head arrow components.
+    arrowhead_drawing = Instance(Container)
+
+    # Container of tail arrow components.
+    arrowtail_drawing = Instance(Container)
+
+    # Container of head arrow label components.
+    arrowhead_label_drawing = Instance(Container)
+
+    # Container of tail arrow label components.
+    arrowtail_label_drawing = Instance(Container)
+
+    # Container for the drawing, label, arrow and arrow label components.
+    component = Instance(Container, desc="container of graph components.")
+
+    # A view into a sub-region of the canvas.
+    vp = Instance(Viewport, desc="a view of a sub-region of the canvas")
+
+    # Use Graphviz to arrange all graph components.
+    arrange = Button("Arrange All")
 
     #--------------------------------------------------------------------------
     #  Dot trait definitions:
@@ -524,33 +562,39 @@ class Edge(Container):
     #--------------------------------------------------------------------------
 
     traits_view = View(
-        Tabbed(
-            Group(
-                Item(name="tail_node",
-                    editor=InstanceEditor(name="_nodes", editable=False)),
-                Item(name="head_node",
-                    editor=InstanceEditor(name="_nodes", editable=False)),
-                ["style", "layer", "color", "colorscheme", "dir",
-                "arrowsize", "constraint", "decorate", "showboxes", "tooltip",
-                "edgetooltip", "edgetarget", "target", "comment"],
-                label="Edge"),
-            Group(["label", "fontname", "fontsize", "fontcolor", "nojustify",
-                "labeltarget", "labelfloat", "labelfontsize",
-                "labeltooltip", "labelangle", "lp", "labelURL",
-                "labelfontname", "labeldistance", "labelfontcolor",
-                "labelhref"],
-                label="Label"),
-            Group(["minlen", "weight", "len", "pos"], label="Dimension"),
-            Group(["arrowhead", "samehead", "headURL", "headtooltip",
-                "headclip", "headport", "headlabel", "headtarget", "lhead",
-                "headhref"],
-                label="Head"),
-            Group(["arrowtail", "tailtarget", "tailhref", "ltail", "sametail",
-                "tailport", "taillabel", "tailtooltip", "tailURL", "tailclip"],
-                label="Tail"),
-            Group(["URL", "href", "edgeURL", "edgehref"], label="URL"),
-            Group(["_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_",
-                "_tldraw_"], label="Xdot")
+        VGroup(
+            Group(Item(name="vp", editor=ComponentEditor(height=100),
+                show_label=False, id=".component"),
+                Item("arrange", show_label=False)),
+            Tabbed(
+                Group(
+                    Item(name="tail_node",
+                        editor=InstanceEditor(name="_nodes", editable=False)),
+                    Item(name="head_node",
+                        editor=InstanceEditor(name="_nodes", editable=False)),
+                    ["style", "layer", "color", "colorscheme", "dir",
+                    "arrowsize", "constraint", "decorate", "showboxes", "tooltip",
+                    "edgetooltip", "edgetarget", "target", "comment"],
+                    label="Edge"),
+                Group(["label", "fontname", "fontsize", "fontcolor", "nojustify",
+                    "labeltarget", "labelfloat", "labelfontsize",
+                    "labeltooltip", "labelangle", "lp", "labelURL",
+                    "labelfontname", "labeldistance", "labelfontcolor",
+                    "labelhref"],
+                    label="Label"),
+                Group(["minlen", "weight", "len", "pos"], label="Dimension"),
+                Group(["arrowhead", "samehead", "headURL", "headtooltip",
+                    "headclip", "headport", "headlabel", "headtarget", "lhead",
+                    "headhref"],
+                    label="Head"),
+                Group(["arrowtail", "tailtarget", "tailhref", "ltail", "sametail",
+                    "tailport", "taillabel", "tailtooltip", "tailURL", "tailclip"],
+                    label="Tail"),
+                Group(["URL", "href", "edgeURL", "edgehref"], label="URL"),
+                Group(["_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_",
+                    "_tldraw_"], label="Xdot"),
+                dock="tab"
+            ), layout="split", id=".splitter"
         ),
         title="Edge", id="godot.edge", buttons=["OK", "Cancel", "Help"],
         resizable=True
@@ -613,10 +657,31 @@ class Edge(Container):
             attrstr = ""
 
         edge_str = "%s%s %s %s%s%s;" % ( self.tail_node.ID, self.tailport,
-                                           self.conn,
-                                           self.head_node.ID, self.headport,
-                                           attrstr )
+                                         self.conn,
+                                         self.head_node.ID, self.headport,
+                                         attrstr )
         return edge_str
+
+    #--------------------------------------------------------------------------
+    #  Trait initialisers:
+    #--------------------------------------------------------------------------
+
+    def _component_default(self):
+        """ Trait initialiser.
+        """
+        component = Container(auto_size=True, bgcolor="green")
+#        component.tools.append( MoveTool(component) )
+#        component.tools.append( TraitsTool(component) )
+        return component
+
+
+    def _vp_default(self):
+        """ Trait initialiser.
+        """
+        vp = Viewport( component=self.component )
+        vp.enable_zoom=True
+        vp.tools.append( ViewportPanTool(vp) )
+        return vp
 
     #--------------------------------------------------------------------------
     #  Property getters:
@@ -631,13 +696,208 @@ class Edge(Container):
         else:
             return "Edge"
 
+    #--------------------------------------------------------------------------
+    #  Event handlers:
+    #--------------------------------------------------------------------------
+
+    @on_trait_change("arrange")
+    def arrange_all(self):
+        """ Arrange the components of the node using Graphviz.
+        """
+        # FIXME: Circular reference avoidance.
+        import godot.dot_data_parser
+        import godot.graph
+
+        graph = godot.graph.Graph( ID="g", directed=True )
+        self.conn = "->"
+        graph.edges.append( self )
+
+        xdot_data = graph.create( format="xdot" )
+
+        print "XDOT DATA:", xdot_data
+
+        parser = godot.dot_data_parser.GodotDataParser()
+        ndata = xdot_data.replace('\\\n','')
+        tokens = parser.dotparser.parseString(ndata)[0]
+
+        for element in tokens[3]:
+            cmd = element[0]
+            if cmd == "add_edge":
+                cmd, src, dest, opts = element
+                graph.edges[0].set( **opts )
+
+
+#    @on_trait_change("_draw_")
+#    def parse_drawing_directive(self, new):
+#        """ Parses the drawing directive, updating the edge components.
+#        """
+#        components = XdotAttrParser().parse_xdot_data(new)
+#
+#        pos_x = min( [c.x for c in components] )
+#        pos_y = min( [c.y for c in components] )
+#
+#        min_x = min( [t[0] for t in self.pos] + [0] )
+#        min_y = min( [t[1] for t in self.pos] + [0] )
+#
+#        move_to_origin( components )
+#
+#        container = Container(auto_size=True,
+#            position=[0, 0],#[pos_x - min_x, pos_y - min_y],
+#            bgcolor="yellow")
+#        container.add( *components )
+#
+#        self.drawing = container
+
+
+#    @on_trait_change("_hdraw_")
+#    def parse_arrowhead_drawing_directive(self, new):
+#        """ Parses the head arrow drawing directive, updating the edge
+#            components.
+#        """
+#        components = XdotAttrParser().parse_xdot_data(new)
+#
+#        print "ARROWHEAD:", new, components
+#
+#        pos_x = min( [c.x for c in components] )
+#        pos_y = min( [c.y for c in components] )
+#        min_x = min( [t[0] for t in self.pos] + [0] )
+#        min_y = min( [t[1] for t in self.pos] + [0] )
+#
+#        move_to_origin( components )
+#
+#        container = Container(auto_size=True,
+#            position=[0, 0],#[pos_x - min_x, pos_y - min_y],
+#            bgcolor="yellow")
+#        container.add( *components )
+#
+#        self.arrowhead_drawing = container
+
+
+    @on_trait_change("_draw_,_hdraw_")
+    def _parse_xdot_directive(self, name, new):
+        """ Handles parsing Xdot drawing directives.
+        """
+        components = XdotAttrParser().parse_xdot_data(new)
+
+        pos_x = min( [c.x for c in components] )
+        pos_y = min( [c.y for c in components] )
+
+        min_x = min( [t[0] for t in self.pos] + [0] )
+        min_y = min( [t[1] for t in self.pos] + [0] )
+
+        move_to_origin( components )
+
+        container = Container(auto_size=True,
+            position=[0, 0],#[pos_x - min_x, pos_y - min_y],
+            bgcolor="yellow")
+        container.add( *components )
+
+        if name == "_draw_":
+            self.drawing = container
+        elif name == "_hdraw_":
+            self.arrowhead_drawing = container
+        else:
+            raise ValueError
+
+
+#    def _drawing_changed(self, old, new):
+#        """ Handles the container of drawing components changing.
+#        """
+#        if old is not None:
+#            self.component.remove( old )
+#        if new is not None:
+#            self.component.add( new )
+#
+#        if self.pos:
+#            min_x = min( [t[0] for t in self.pos] )
+#            min_y = min( [t[1] for t in self.pos] )
+#        else:
+#            min_x = min_y = 0
+#
+#        self.component.position = [ min_x, min_y ]
+#        self.component.request_redraw()
+
+
+#    def _arrowhead_drawing_changed(self, old, new):
+#        """ Handles the container of drawing components changing.
+#        """
+#        if old is not None:
+#            self.component.remove( old )
+#        if new is not None:
+#            self.component.add( new )
+#
+#        if self.pos:
+#            min_x = min( [t[0] for t in self.pos] )
+#            min_y = min( [t[1] for t in self.pos] )
+#        else:
+#            min_x = min_y = 0
+#
+#        self.component.position = [ min_x, min_y ]
+#        self.component.request_redraw()
+
+
+    @on_trait_change("drawing,arrowhead_drawing")
+    def _replace_drawing(self, object, name, old, new):
+        """ Handles the container of drawing components changing.
+        """
+        if old is not None:
+            self.component.remove( old )
+        if new is not None:
+            self.component.add( new )
+
+#        if self.pos:
+#            min_x = min( [t[0] for t in self.pos] )
+#            min_y = min( [t[1] for t in self.pos] )
+#        else:
+#            min_x = min_y = 0
+#
+#        self.component.position = [ min_x, min_y ]
+        self.component.request_redraw()
+
+
+#    @on_trait_change("component.position")
+#    def _on_position_change(self, new):
+#        """ Handles the poition of the component changing.
+#        """
+#        x, y = new
+#        self.pos = [(t[0] + x, t[1] + y) for t in self.pos]
+
+
+    @on_trait_change("pos,pos_items")
+    def _on_position_change(self, new):
+        """ Handles the Graphviz position attribute changing.
+        """
+        if self.pos:
+            min_x = min( [t[0] for t in self.pos] )
+            min_y = min( [t[1] for t in self.pos] )
+            max_x = max( [t[0] for t in self.pos] )
+            max_y = max( [t[1] for t in self.pos] )
+        else:
+            min_x = min_y = 0
+            max_x = max_y = 5
+
+#        self.component.bounds = [ max_x - min_x, max_y - min_y ]
+        self.component.position = [ min_x, min_y ]
+        self.component.request_redraw()
+
 #------------------------------------------------------------------------------
 #  Stand-alone call:
 #------------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import sys, logging
+    logger = logging.getLogger()
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.setLevel(logging.DEBUG)
+
+    from godot.component.component_viewer import ComponentViewer
+    from godot.edge import Edge
+
     edge = Edge(Node("node1"), Node("node2"))
+#    edge.arrange_all()
     edge.configure_traits()
-    print edge
+
+#    viewer = ComponentViewer(component=edge.component)
+#    viewer.configure_traits()
 
 # EOF +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

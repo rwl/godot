@@ -945,8 +945,8 @@ class Graph(BaseGraph):
 
 
     def _epsilon_default(self):
-        """ Trait initialiser. """
-
+        """ Trait initialiser.
+        """
         if self.mode == "KK":
             return 0.0001 * len(self.nodes)
         else:
@@ -954,8 +954,8 @@ class Graph(BaseGraph):
 
 
     def _maxiter_default(self):
-        """ Trait initialiser. """
-
+        """ Trait initialiser.
+        """
         mode = self.mode
         if mode == "KK":
             return 100 * len(self.nodes)
@@ -1053,17 +1053,16 @@ if __name__ == "__main__":
 
 #    from godot.graph import Graph
 
-    graph = Graph(ID="Foo", strict=True, directed=False, label="Foo Graph")
+    graph = Graph(ID="Foo", directed=True, label="Foo Graph")
 
-    node1 = Node("node1", label="Node 1", shape="circle")
+    node1 = Node("node1", label="Node 1", shape="rectangle")
     graph.add_node( node1 )
 
-    node2 = Node("node2", label="Node 2", shape="rect")
+    node2 = Node("node2", label="Node 2")
     graph.add_node( node2 )
 
-#    edge = Edge(node1, node2)
-#    graph.nodes.extend([node1, node2])
-#    graph.edges.append(edge)
+    edge = Edge(node1, node2, conn="->")
+    graph.edges.append(edge)
 
 
 #    subgraph1 = Subgraph(ID="subgraph1", rank="min")

@@ -170,21 +170,27 @@ class Ellipse(Component):
 #------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    from pylon.ui.graph.component_viewer import ComponentViewer
+    from godot.component.component_viewer import ComponentViewer
 
     pen = Pen()
     ellipse = Ellipse(
 #        filled=True,
-        pen=pen, x_origin=150, y_origin=100, e_width=100, e_height=50,
+        pen=pen, x_origin=200, y_origin=150, e_width=100, e_height=50,
 #        bounds=[50, 50], position=[0, 0]
 
     )
 
     from enthought.enable.api import Container
-    con = Container(bounds=[100, 50], position=[200, 200], bgcolor="green")
-    con.add(ellipse)
+    container = Container(
+#        fit_window=False, auto_size=True,
+        bounds=[200, 100], position=[100, 100],
+        bgcolor="green")
+    container.add( ellipse )
 
-    viewer = ComponentViewer(component=con)
+    ellipse.x_origin -= container.x
+    ellipse.y_origin -= container.y
+
+    viewer = ComponentViewer( component=container )
 
     from enthought.enable.primitives.api import Box
     box = Box(

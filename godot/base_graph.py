@@ -287,10 +287,9 @@ class BaseGraph ( HasTraits ):
         """ Trait initialiser.
         """
         vp = Viewport(component=self.component)
+
         vp.enable_zoom=True
-
-        vp.view_position = [0,0]
-
+        vp.view_position = [-5, -5]
         vp.tools.append(ViewportPanTool(vp))
 
         return vp

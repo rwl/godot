@@ -33,6 +33,8 @@ import os
 
 from enthought.traits.api import HasTraits, Enum
 
+from godot.component.api import Ellipse, Text, Polygon, BSpline
+
 #------------------------------------------------------------------------------
 #  File extension for load/save protocol mapping.
 #------------------------------------------------------------------------------
@@ -127,5 +129,32 @@ def format_from_extension(fname):
     except KeyError:
         format = None
     return format
+
+#------------------------------------------------------------------------------
+#  Position components at the origin.
+#------------------------------------------------------------------------------
+
+def move_to_origin(components):
+    """ Components are positioned relative to their container. Use this
+        method to position the bottom-left corner of the coponents at
+        the origin.
+    """
+    for component in components:
+        if isinstance(component, Ellipse):
+            component.x_origin = component.e_width
+            component.y_origin = component.e_height
+
+        elif isinstance(component, (Polygon, BSpline)):
+            min_x = min( [t[0] for t in component.points] )
+            min_y = min( [t[1] for t in component.points] )
+
+            component.points = [
+                ( p[0]-min_x, p[1]-min_y ) for p in component.points
+            ]
+
+        elif isinstance(component, Text):
+            font = str_to_font( str(component.pen.font) )
+            component.text_x = 0#-( component.text_w / 2 )
+            component.text_y = 0#-( font.size / 2 )
 
 # EOF -------------------------------------------------------------------------

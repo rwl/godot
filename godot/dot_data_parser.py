@@ -69,17 +69,19 @@ class GodotDataParser(DotDataParser):
     def _proc_edge_stmt(self, toks):
         """ Returns a tuple of the form (ADD_EDGE, src, dest, options).
         """
-        print toks
         opts = toks[3]
         dummy_edge = Edge("dummy1", "dummy2")
         # Coerce attribute types.
         for key, value in opts.iteritems():
             trait = dummy_edge.trait(key)
             if trait is not None:
+                # FIXME: Implement Graphviz spline types.
                 if trait.is_trait_type( List ):
                     p = [] # List of float doublets.
                     for t in value.split( " " ):
                         l = t.split( "," )
+                        if len(l) == 3: # pos="e,39,61 39,97 39,89 39,80 39,71"
+                            l.pop(0)
                         f = [ float(a) for a in l ]
                         p.append( tuple(f) )
                     opts[key] = p
@@ -194,7 +196,7 @@ class GodotDataParser(DotDataParser):
                 graph.default_edge.set( **element[1] )
 
             elif cmd == SET_DEF_GRAPH_ATTR:
-                graph.default_graph.set (**element[1] )
+                graph.default_graph.set( **element[1] )
 
             elif cmd == ADD_SUBGRAPH:
                 cmd, name, elements = element

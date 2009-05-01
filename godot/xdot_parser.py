@@ -210,7 +210,7 @@ class XdotAttrParser:
         fill.setParseAction(self.proc_fill_color)
         stroke.setParseAction(self.proc_stroke_color)
         font.setParseAction(self.proc_font)
-#        style.setParseAction(self.proc_style)
+        style.setParseAction(self.proc_style)
 
         # Shape parse actions.
         filled_ellipse.setParseAction(self.proc_filled_ellipse)
@@ -293,9 +293,10 @@ class XdotAttrParser:
         "dashed", "dotted", "solid", "invis" and "bold" for nodes and edges,
         and "filled", "diagonals" and "rounded" for nodes only. The styles
         "filled" and "rounded" are recognized for clusters. Additional styles
-        are available in device-dependent form."""
-
-        raise NotImplementedError
+        are available in device-dependent form.
+        """
+        # FIXME: Implement style attributes.
+        return []
 
     #--------------------------------------------------------------------------
     #  Ellipse:
