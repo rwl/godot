@@ -101,8 +101,8 @@ class Text(Component):
 
             gc.set_fill_color(self.pen.color_)
 
-            x = self.text_x# - ( self.text_w / 2 )
-            y = self.text_y# - ( font.size / 2 )
+            x = self.text_x - ( self.text_w / 2 )
+            y = self.text_y - ( font.size / 2 )
 
             # Show text at the same scale as the graphics context
             ctm = gc.get_ctm()
@@ -125,12 +125,12 @@ class Text(Component):
         if self.pen is None:
             return
 
-        x = self.text_x# - (self.text_w / 2)
+        x = self.text_x - (self.text_w / 2)
         x2 = x + self.text_w
 
         font = str_to_font( str(self.pen.font) )
 
-        y = self.text_y# - (font.size / 2)
+        y = self.text_y - (font.size / 2)
         y2 = y + font.size
 
         self.position = [x, y]

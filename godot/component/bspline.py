@@ -205,19 +205,31 @@ class BSpline(Component):
     #  "BSpline" interface:
     #--------------------------------------------------------------------------
 
+#    def _position_changed(self, old, new):
+#        """ Handles the position of the component changing.
+#        """
+#        dx = new[0] - old[0]
+#        dy = new[1] - old[1]
+#        self.points = [(t[0] + dx, t[1] + dy) for t in self.points]
+
+
     @on_trait_change("pen.+,points")
     def _update(self):
-        """ Updates the position and bounds of the component. """
-
-        if not self.points: return
+        """ Updates the position and bounds of the component.
+        """
+        if not self.points:
+            return
 
         x_points = [x for x, y in self.points]
         y_points = [y for x, y in self.points]
-        x = min(x_points)
+
+        x  = min(x_points)
         x2 = max(x_points)
-        y = min(y_points)
+        y  = min(y_points)
         y2 = max(y_points)
+
         self.position = [x, y]
+
         # If bounds are set to 0, horizontal/vertical lines will not render
         self.bounds = [max(x2-x, 5), max(y2-y, 5)]
 

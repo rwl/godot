@@ -219,12 +219,16 @@ class GraphViewModel(ModelView):
 
         dlg = FileDialog( action = "open",
             wildcard = "Graphviz Files (*.dot, *.xdot, *.txt)|"
-                "*.dot, *.xdot, *.txt|Dot Files (*.dot)|*.dot|"
+                "*.dot;*.xdot;*.txt|Dot Files (*.dot)|*.dot|"
                 "All Files (*.*)|*.*|")
 
         if dlg.open() == OK:
             parser = GodotDataParser()
-            self.model = parser.parse_dot_file(dlg.path)
+            model = parser.parse_dot_file(dlg.path)
+            if model is not None:
+                self.model = model
+            else:
+                print "error parsing: %s" % dlg.path
 
             self.save_file = dlg.path
 
@@ -272,7 +276,7 @@ class GraphViewModel(ModelView):
 
         dlg = FileDialog( action = "save as",
             wildcard = "Graphviz Files (*.dot, *.xdot, *.txt)|" \
-                "*.dot, *.xdot, *.txt|Dot Files (*.dot)|*.dot|" \
+                "*.dot;*.xdot;*.txt|Dot Files (*.dot)|*.dot|" \
                 "All Files (*.*)|*.*|")
 
         if dlg.open() == OK:
@@ -491,13 +495,16 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
 
     graph = Graph(ID="G")
-    sg1 = Subgraph(ID="SG1")
-    graph.subgraphs.append(sg1)
-    sg2 = Subgraph(ID="SG2")
-    sg1.subgraphs.append(sg2)
+#    sg1 = Subgraph(ID="SG1")
+#    graph.subgraphs.append(sg1)
+#    sg2 = Subgraph(ID="SG2")
+#    sg1.subgraphs.append(sg2)
+#
+#    n1 = Node(ID="N1")
+#    sg2.nodes = [n1]
 
-    n1 = Node(ID="N1")
-    sg2.nodes = [n1]
+    graph.add_node("node1")
+    graph.add_node("node2")
 
     view_model = GraphViewModel(model=graph)
     view_model.configure_traits()

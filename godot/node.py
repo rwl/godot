@@ -627,7 +627,7 @@ class Node(HasTraits):
 #                setattr( self, attr, value )
 
 
-    @on_trait_change("_draw_")
+#    @on_trait_change("_draw_")
     def parse_xdot_drawing_directive(self, new):
         """ Parses the drawing directive, updating the node components.
         """
@@ -684,7 +684,7 @@ class Node(HasTraits):
             self.component.add( new )
 
         w, h = self.component.bounds
-        self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
+        self.component.position = [ self.pos[0] - (w/2), self.pos[1] - (h/2) ]
 #        self.component.position = [ self.pos[0], self.pos[1] ]
         self.component.request_redraw()
 
@@ -698,7 +698,7 @@ class Node(HasTraits):
             self.component.add(new)
 
         w, h = self.component.bounds
-        self.component.position = [ self.pos[0] - w / 2, self.pos[1] - h / 2 ]
+        self.component.position = [ self.pos[0] - (w/2), self.pos[1] - (h/2) ]
 #        self.component.position = list( self.pos )
         self.component.request_redraw()
 
@@ -708,7 +708,7 @@ class Node(HasTraits):
         """ Handles the poition of the component changing.
         """
         w, h = self.component.bounds
-        self.pos = tuple([ new[0] + w / 2, new[1] + h / 2 ])
+        self.pos = tuple([ new[0] + (w/2), new[1] + (h/2) ])
 #        self.pos = tuple( new )
 
 
@@ -716,7 +716,7 @@ class Node(HasTraits):
         """ Handles the Graphviz position attribute changing.
         """
         w, h = self.component.bounds
-        self.component.position = [ new[0] - w / 2, new[1] - h / 2 ]
+        self.component.position = [ new[0] - (w/2), new[1] - (h/2) ]
 #        self.component.position = list( new )
         self.component.request_redraw()
 

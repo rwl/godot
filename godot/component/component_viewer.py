@@ -51,6 +51,7 @@ class ComponentViewer(HasTraits):
             ),
             Group(
                 Item(name="component", style="custom", show_label=False),
+                scrollable=True
             )
         ),
         resizable=True, id="canvas_viewer", width=.6, height=.4,

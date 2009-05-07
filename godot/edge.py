@@ -38,6 +38,9 @@ from enthought.enable.api import Container, Viewport
 from enthought.enable.tools.api import ViewportPanTool, ViewportZoomTool
 from enthought.enable.component_editor import ComponentEditor
 from enthought.naming.unique_name import make_unique_name
+from enthought.kiva.fonttools.font import str_to_font
+
+from godot.component.api import Ellipse, Text, Polygon, BSpline
 
 from node import Node
 
@@ -713,8 +716,7 @@ class Edge(HasTraits):
         graph.edges.append( self )
 
         xdot_data = graph.create( format="xdot" )
-
-        print "XDOT DATA:", xdot_data
+#        print "XDOT DATA:", xdot_data
 
         parser = godot.dot_data_parser.GodotDataParser()
         ndata = xdot_data.replace('\\\n','')
@@ -724,7 +726,106 @@ class Edge(HasTraits):
             cmd = element[0]
             if cmd == "add_edge":
                 cmd, src, dest, opts = element
-                graph.edges[0].set( **opts )
+                self.set( **opts )
+
+
+#    @on_trait_change("_draw_,_hdraw_")
+    def _parse_xdot_directive(self, name, new):
+        """ Handles parsing Xdot drawing directives.
+        """
+        parser = XdotAttrParser()
+        components = parser.parse_xdot_data(new)
+
+        # The absolute coordinate of the drawing container wrt graph origin.
+        x1 = min( [c.x for c in components] )
+        y1 = min( [c.y for c in components] )
+
+        print "X1/Y1:", name, x1, y1
+
+        # Components are positioned relative to their container. This
+        # function positions the bottom-left corner of the components at
+        # their origin rather than relative to the graph.
+#        move_to_origin( components )
+
+        for c in components:
+            if isinstance(c, Ellipse):
+                component.x_origin -= x1
+                component.y_origin -= y1
+#                c.position = [ c.x - x1, c.y - y1 ]
+
+            elif isinstance(c, (Polygon, BSpline)):
+                print "Points:", c.points
+                c.points = [ (t[0] - x1, t[1] - y1) for t in c.points ]
+                print "Points:", c.points
+
+            elif isinstance(c, Text):
+#                font = str_to_font( str(c.pen.font) )
+                c.text_x, c.text_y = c.x - x1, c.y - y1
+
+        container = Container(auto_size=True,
+            position=[ x1, y1 ],
+            bgcolor="yellow")
+
+        container.add( *components )
+
+        if name == "_draw_":
+            self.drawing = container
+        elif name == "_hdraw_":
+            self.arrowhead_drawing = container
+        else:
+            raise
+
+
+    @on_trait_change("drawing,arrowhead_drawing")
+    def _on_drawing(self, object, name, old, new):
+        """ Handles the containers of drawing components being set.
+        """
+        attrs = [ "drawing", "arrowhead_drawing" ]
+
+        others = [getattr(self, a) for a in attrs \
+            if (a != name) and (getattr(self, a) is not None)]
+
+        x, y = self.component.position
+        print "POS:", x, y, self.component.position
+
+        abs_x = [d.x + x for d in others]
+        abs_y = [d.y + y for d in others]
+
+        print "ABS:", abs_x, abs_y
+
+        # Assume that he new drawing is positioned relative to graph origin.
+        x1 = min( abs_x + [new.x] )
+        y1 = min( abs_y + [new.y] )
+
+        print "DRAW:", new.position
+        new.position = [ new.x - x1, new.y - y1 ]
+        print "DRAW:", new.position
+
+#        for i, b in enumerate( others ):
+#            self.drawing.position = [100, 100]
+#            self.drawing.request_redraw()
+#            print "OTHER:", b.position, abs_x[i] - x1
+#            b.position = [ abs_x[i] - x1, abs_y[i] - y1 ]
+#            b.x = 50
+#            b.y = 50
+#            print "OTHER:", b.position, abs_x[i], x1
+
+#        for attr in attrs:
+#            if attr != name:
+#                if getattr(self, attr) is not None:
+#                    drawing = getattr(self, attr)
+#                    drawing.position = [50, 50]
+
+        if old is not None:
+            self.component.remove( old )
+        if new is not None:
+            self.component.add( new )
+
+        print "POS NEW:", self.component.position
+        self.component.position = [ x1, y1 ]
+        print "POS NEW:", self.component.position
+        self.component.request_redraw()
+        print "POS NEW:", self.component.position
 
 
 #    @on_trait_change("_draw_")
@@ -773,33 +874,6 @@ class Edge(HasTraits):
 #        self.arrowhead_drawing = container
 
 
-    @on_trait_change("_draw_,_hdraw_")
-    def _parse_xdot_directive(self, name, new):
-        """ Handles parsing Xdot drawing directives.
-        """
-        components = XdotAttrParser().parse_xdot_data(new)
-
-        pos_x = min( [c.x for c in components] )
-        pos_y = min( [c.y for c in components] )
-
-        min_x = min( [t[0] for t in self.pos] + [0] )
-        min_y = min( [t[1] for t in self.pos] + [0] )
-
-        move_to_origin( components )
-
-        container = Container(auto_size=True,
-            position=[0, 0],#[pos_x - min_x, pos_y - min_y],
-            bgcolor="yellow")
-        container.add( *components )
-
-        if name == "_draw_":
-            self.drawing = container
-        elif name == "_hdraw_":
-            self.arrowhead_drawing = container
-        else:
-            raise ValueError
-
-
 #    def _drawing_changed(self, old, new):
 #        """ Handles the container of drawing components changing.
 #        """
@@ -836,25 +910,6 @@ class Edge(HasTraits):
 #        self.component.request_redraw()
 
 
-    @on_trait_change("drawing,arrowhead_drawing")
-    def _replace_drawing(self, object, name, old, new):
-        """ Handles the container of drawing components changing.
-        """
-        if old is not None:
-            self.component.remove( old )
-        if new is not None:
-            self.component.add( new )
-
-#        if self.pos:
-#            min_x = min( [t[0] for t in self.pos] )
-#            min_y = min( [t[1] for t in self.pos] )
-#        else:
-#            min_x = min_y = 0
-#
-#        self.component.position = [ min_x, min_y ]
-        self.component.request_redraw()
-
-
 #    @on_trait_change("component.position")
 #    def _on_position_change(self, new):
 #        """ Handles the poition of the component changing.
@@ -863,22 +918,23 @@ class Edge(HasTraits):
 #        self.pos = [(t[0] + x, t[1] + y) for t in self.pos]
 
 
-    @on_trait_change("pos,pos_items")
-    def _on_position_change(self, new):
-        """ Handles the Graphviz position attribute changing.
-        """
-        if self.pos:
-            min_x = min( [t[0] for t in self.pos] )
-            min_y = min( [t[1] for t in self.pos] )
-            max_x = max( [t[0] for t in self.pos] )
-            max_y = max( [t[1] for t in self.pos] )
-        else:
-            min_x = min_y = 0
-            max_x = max_y = 5
-
-#        self.component.bounds = [ max_x - min_x, max_y - min_y ]
-        self.component.position = [ min_x, min_y ]
-        self.component.request_redraw()
+#    @on_trait_change("pos,pos_items")
+#    def _on_position_change(self):
+#        """ Handles the Graphviz position attribute changing.
+#        """
+#        position = self.pos
+#        if position:
+#            min_x = min( [t[0] for t in position] )
+#            min_y = min( [t[1] for t in position] )
+#            max_x = max( [t[0] for t in position] )
+#            max_y = max( [t[1] for t in position] )
+#        else:
+#            min_x = min_y = 0
+#            max_x = max_y = 5
+#
+##        self.component.bounds = [ max_x - min_x, max_y - min_y ]
+#        self.component.position = [ min_x, min_y ]
+#        self.component.request_redraw()
 
 #------------------------------------------------------------------------------
 #  Stand-alone call:

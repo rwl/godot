@@ -36,7 +36,7 @@ import logging
 from enthought.traits.api import \
     HasTraits, Any, Instance, Trait, Tuple, Bool, Str, Enum, Float, Color, \
     Either, Range, Int, Font, List, Directory, ListInstance, This, Property, \
-    Dict
+    Dict, on_trait_change
 
 from enthought.traits.trait_handlers import TraitListEvent
 
@@ -882,6 +882,61 @@ class Graph(BaseGraph):
     #  Public interface:
     #--------------------------------------------------------------------------
 
+    @on_trait_change("arrange")
+    def arrange_all(self):
+        """ Sets for the _draw_ and _ldraw_ attributes for each of the graph
+            sub-elements by processing the xdot format of the graph.
+        """
+        import godot.dot_data_parser
+
+        parser = godot.dot_data_parser.GodotDataParser()
+
+        xdot_data = self.create( format = "xdot" )
+#        print "GRAPH DOT:\n", str( self )
+#        print "XDOT DATA:\n", xdot_data
+
+        parser.dotparser.parseWithTabs()
+        ndata = xdot_data.replace( "\\\n", "" )
+        tokens = parser.dotparser.parseString( ndata )[0]
+        parser.build_graph( graph=self, tokens=tokens[3] )
+
+        self.redraw_canvas()
+
+
+    @on_trait_change("redraw")
+    def redraw_canvas(self):
+        """ Parses the Xdot attributes of all graph components and adds
+            the components to a new canvas.
+        """
+        from xdot_parser import XdotAttrParser
+
+        xdot_parser = XdotAttrParser()
+        canvas = self._component_default()
+
+        for node in self.nodes:
+            components = xdot_parser.parse_xdot_data( node._draw_ )
+            canvas.add( *components )
+
+            components = xdot_parser.parse_xdot_data( node._ldraw_ )
+            canvas.add( *components )
+
+        for edge in self.edges:
+            components = xdot_parser.parse_xdot_data( edge._draw_ )
+            canvas.add( *components )
+            components = xdot_parser.parse_xdot_data( edge._ldraw_ )
+            canvas.add( *components )
+            components = xdot_parser.parse_xdot_data( edge._hdraw_ )
+            canvas.add( *components )
+            components = xdot_parser.parse_xdot_data( edge._tdraw_ )
+            canvas.add( *components )
+            components = xdot_parser.parse_xdot_data( edge._hldraw_ )
+            canvas.add( *components )
+            components = xdot_parser.parse_xdot_data( edge._tldraw_ )
+            canvas.add( *components )
+
+        self.component = canvas
+
+
     def get_node(self, ID):
         """ Returns a node given an ID or None if no such node exists.
         """
@@ -1061,8 +1116,7 @@ if __name__ == "__main__":
     node2 = Node("node2", label="Node 2")
     graph.add_node( node2 )
 
-    edge = Edge(node1, node2, conn="->")
-    graph.edges.append(edge)
+    graph.add_edge(node1, node2)
 
 
 #    subgraph1 = Subgraph(ID="subgraph1", rank="min")

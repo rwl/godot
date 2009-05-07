@@ -78,15 +78,12 @@ class XdotAttrParser:
         """ Parses xdot data and returns the associated components. """
 
         parser = self.parser
-
 #        if pyparsing_version >= "1.2":
 #            parser.parseWithTabs()
-
-        tokens = parser.parseString(data)
-
-#        print "COMPONENTS:", tokens
-
-        return tokens#[tok for tok in tokens if isinstance(tok, Component)]
+        if data:
+            return parser.parseString(data)
+        else:
+            return []
 
     #--------------------------------------------------------------------------
     #  Define the dot parser

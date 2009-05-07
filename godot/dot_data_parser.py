@@ -60,7 +60,7 @@ class GodotDataParser(DotDataParser):
                 if trait.is_trait_type( Float ):
                     opts[key] = float( value )
 
-                if trait.is_trait_type( Tuple ):
+                elif trait.is_trait_type( Tuple ):
                     opts[key] = tuple( [float(c) for c in value.split(",")] )
 
         return super(GodotDataParser, self)._proc_node_stmt(toks)
@@ -85,6 +85,12 @@ class GodotDataParser(DotDataParser):
                         f = [ float(a) for a in l ]
                         p.append( tuple(f) )
                     opts[key] = p
+
+                elif trait.is_trait_type( Float ):
+                    opts[key] = float( value )
+
+                elif trait.is_trait_type( Tuple ):
+                    opts[key] = tuple( [float(c) for c in value.split(",")] )
 
         return super(GodotDataParser, self)._proc_edge_stmt(toks)
 

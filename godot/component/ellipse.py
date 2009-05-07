@@ -149,19 +149,28 @@ class Ellipse(Component):
         print "Ellipse selected at (%d, %d)" % (event.x, event.y)
 
 
+#    def _position_changed(self, new):
+#        """ Handles the position of the component changing.
+#        """
+#        x, y = new
+#        self.x_origin = x + self.e_width
+#        self.y_origin = y + self.e_height
+
+
     @on_trait_change("pen.+,x_origin,y_origin,e_width,e_height,filled,container")
     def _update(self):
 
         x_origin = self.x_origin
         y_origin = self.y_origin
 
-        x = x_origin-(self.e_width)
-        x2 = x_origin+(self.e_width)
+        x = x_origin - (self.e_width)
+        x2 = x_origin + (self.e_width)
         y = y_origin-(self.e_height)
-        y2 = y_origin+(self.e_height)
-        self.position = [x,y]
-        # If bounds are set to 0, horizontal/vertical lines will not render
-        self.bounds = [max(x2-x, 1), max(y2-y, 1)]
+        y2 = y_origin + (self.e_height)
+
+        self.position = [x, y]
+        # If bounds are set to 0, horizontal/vertical lines will not render.
+        self.bounds = [ max(x2-x, 1), max(y2-y, 1) ]
 
         self.request_redraw()
 

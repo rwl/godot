@@ -33,6 +33,8 @@ import os
 
 from enthought.traits.api import HasTraits, Enum
 
+from enthought.kiva.fonttools.font import str_to_font
+
 from godot.component.api import Ellipse, Text, Polygon, BSpline
 
 #------------------------------------------------------------------------------
@@ -136,7 +138,7 @@ def format_from_extension(fname):
 
 def move_to_origin(components):
     """ Components are positioned relative to their container. Use this
-        method to position the bottom-left corner of the coponents at
+        method to position the bottom-left corner of the components at
         the origin.
     """
     for component in components:

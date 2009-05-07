@@ -61,17 +61,22 @@ graph_editor = GraphEditor(
     nodes = [
         GraphNode( child_of = "nodes",
                    label    = "name",
-                   node_for = [DomainNode]
+                   node_for = [DomainNode],
+                   dot_attr = {"shape": "circle"}
         ),
         GraphNode( child_of = "other_nodes",
                    label    = "name",
-                   node_for = [OtherNode]
+                   node_for = [OtherNode],
+                   dot_attr = {"shape": "triangle"}
         )
     ]
 )
 
 class DomainViewModel(ModelView):
-    traits_view = View( Item("model", editor=graph_editor) )
+    traits_view = View(
+        Item("model", style="custom"),
+        Item("model", editor=graph_editor, show_label=False),
+        resizable=True)
 
 #------------------------------------------------------------------------------
 #  "GraphEditorTestCase" class:

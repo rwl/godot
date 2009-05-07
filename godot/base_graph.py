@@ -129,6 +129,9 @@ class BaseGraph ( HasTraits ):
     # Use Graphviz to arrange all graph components.
     arrange = Button("Arrange All")
 
+    # Parses the Xdot attributes for all graph components.
+    redraw = Button("Redraw Canvas")
+
     #--------------------------------------------------------------------------
     #  Enable trait definitions.
     #--------------------------------------------------------------------------
@@ -491,6 +494,9 @@ class BaseGraph ( HasTraits ):
 
         if self.default_edge is not None:
             edge = self.default_edge.clone_traits(copy="deep")
+            edge.tail_node = tail_node
+            edge.head_node = head_node
+            edge.conn = "->" if directed else "--"
             edge.set( **kwds )
         else:
             edge = Edge(tail_node, head_node, directed, **kwds)
@@ -607,7 +613,7 @@ class BaseGraph ( HasTraits ):
 
 
     @on_trait_change("nodes,edges")
-    def _on_node_or_edge(self, old, new):
+    def _on_node_or_edge(self, object, name, old, new):
         """ Handles the list of nodes being set.
         """
         self.component.remove( *[r.component for r in old] )

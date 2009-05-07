@@ -28,7 +28,9 @@
 
 import uuid
 
-from enthought.traits.ui.api import View, Group, VGroup, Item, Tabbed, Label
+from enthought.traits.ui.api \
+    import View, Group, VGroup, HGroup, Item, Tabbed, Label
+
 from enthought.traits.ui.api import TableEditor, InstanceEditor, ListEditor
 from enthought.traits.ui.table_column import ObjectColumn
 from enthought.traits.ui.extras.checkbox_column import CheckboxColumn
@@ -170,6 +172,7 @@ view_port_item = Item(name="vp", editor=ComponentEditor(height=80),
     show_label=False, id=".viewport")
 
 arrange_item = Item("arrange", show_label=False)
+redraw_item = Item("redraw", show_label=False)
 
 nodes_item = Item(name="nodes", editor=node_table_editor, show_label=False)
 edges_item = Item(name="edges", editor=edge_table_editor, show_label=False)
@@ -269,7 +272,7 @@ graph_view = View(
 
 tabbed_view = View(
     VGroup(
-        Group(view_port_item, arrange_item),
+        Group(view_port_item, HGroup(arrange_item, redraw_item)),
         Tabbed(
             Group(nodes_item, label="Nodes"),
             Group(edges_item, label="Edges"),
