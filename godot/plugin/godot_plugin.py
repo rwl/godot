@@ -57,7 +57,8 @@ class GodotPlugin(Plugin):
         """ Trait initialiser.
         """
         from graph_editor import GraphEditorExtension
+        from tree_editor import TreeEditorExtension
 
-        return [GraphEditorExtension]
+        return [GraphEditorExtension, TreeEditorExtension]
 
 # EOF -------------------------------------------------------------------------

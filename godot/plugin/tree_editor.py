@@ -15,7 +15,7 @@
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #------------------------------------------------------------------------------
 
-""" Defines a graph editor.
+""" Defines a graph editor based on a tree control.
 """
 
 #------------------------------------------------------------------------------
@@ -37,61 +37,20 @@ from envisage.resource.api \
     import IResource, ResourceEditor, ResourcePlugin, Editor
 
 from godot.api import Graph, parse_dot_file
+from godot.ui.graph_tree import graph_tree_editor
 
 IMAGE_LOCATION = join(dirname(__file__), "..", "ui", "images")
 
 #------------------------------------------------------------------------------
-#  "DotFileIResourceAdapter" class:
+#  "TreeEditor" class:
 #------------------------------------------------------------------------------
 
-class DotFileIResourceAdapter(Adapter):
-    """ Adapts a "File" with Dot language content to 'IResource'.
-    """
-    # Declare the interfaces this adapter implements for its client:
-    adapts(File, to=IResource, when="adaptee.ext=='.dot'")
-
-    # The object that is being adapted.
-    adaptee = Instance(File)
-
-    #--------------------------------------------------------------------------
-    #  "IResource" interface:
-    #--------------------------------------------------------------------------
-
-    def save(self, obj):
-        """ Save to file.
-        """
-        fd = None
-        try:
-            fd = open(self.adaptee.absolute_path, "wb")
-            obj.save_dot(fd)
-        finally:
-            if fd is not None:
-                fd.close()
-#        self.m_time = getmtime(self.adaptee.absolute_path)
-        return
-
-
-    def load(self):
-        """ Load the file.
-        """
-        fd = None
-        try:
-            obj = parse_dot_file( self.adaptee.absolute_path )
-        finally:
-            if fd is not None:
-                fd.close()
-        return obj
-
-#------------------------------------------------------------------------------
-#  "GraphEditor" class:
-#------------------------------------------------------------------------------
-
-class GraphEditor(ResourceEditor):
-    """ A graph editor.
+class TreeEditor(ResourceEditor):
+    """ A graph tree editor.
     """
 
     #--------------------------------------------------------------------------
-    #  "GraphEditor" interface:
+    #  "TreeEditor" interface:
     #--------------------------------------------------------------------------
 
     # Dot file on the file system.
@@ -123,7 +82,7 @@ class GraphEditor(ResourceEditor):
         self.graph = self.editor_input.load()
 
     #--------------------------------------------------------------------------
-    #  "GraphEditor" interface.
+    #  "TreeEditor" interface.
     #--------------------------------------------------------------------------
 
     def _editor_input_default(self):
@@ -139,7 +98,8 @@ class GraphEditor(ResourceEditor):
         """
         self.graph = self.editor_input.load()
 
-        view = View(Item(name="graph", style="custom", show_label=False),
+        view = View(Item(name="graph", editor=graph_tree_editor,
+                show_label=False),
             id="godot.graph_editor", kind="live", resizable=True)
 
         ui = self.edit_traits(view=view, parent=parent, kind="subpanel")
@@ -162,30 +122,30 @@ class GraphEditor(ResourceEditor):
         pass
 
 #------------------------------------------------------------------------------
-#  "GraphEditorExtension" class:
+#  "TreeEditorExtension" class:
 #------------------------------------------------------------------------------
 
-class GraphEditorExtension(Editor):
-    """ Associates a graph editor with '.dot' file extensions.
+class TreeEditorExtension(Editor):
+    """ Associates a tree editor with '.dot' file extensions.
     """
 
     # The object contribution's globally unique identifier.
-    id = "godot.plugin.graph_editor"
+    id = "godot.plugin.tree_editor"
 
     # A name that will be used in the UI for this editor
-    name = "Graph Editor"
+    name = "Tree Editor"
 
     # An icon that will be used for all resources that match the
     # specified extensions
-    image = ImageResource("graph", search_path=[IMAGE_LOCATION])
+    image = ImageResource("tree", search_path=[IMAGE_LOCATION])
 
     # The contributed editor class
-    editor_class = "godot.plugin.graph_editor:GraphEditor"
+    editor_class = "godot.plugin.tree_editor:TreeEditor"
 
     # The list of file types understood by the editor
     extensions = [".dot", ".xdot"]
 
     # If true, this editor will be used as the default editor for the type
-    default = True
+    default = False
 
 # EOF -------------------------------------------------------------------------

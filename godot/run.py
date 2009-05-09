@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)
 
 class GodotApplication(WorkbenchApplication):
     id = "com.github.pylon"
-    icon = ImageResource("dot.ico")
+    icon = ImageResource("dot.ico", search_path=["ui"])
     name = "Godot"
 
 def main():
