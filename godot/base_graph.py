@@ -463,21 +463,57 @@ class BaseGraph ( HasTraits ):
         """ Removes a node from the graph.
         """
         if isinstance(node_or_ID, Node):
-            name = node.ID
+#            name = node_or_ID.ID
+            node = node_or_ID
         else:
-            name = node_or_ID
+#            name = node_or_ID
+            node = self.get_node(node_or_ID)
+            if node is None:
+                raise ValueError("Node %s does not exists" % node_or_ID)
 
-        self.nodes = [n for n in self.nodes if n.ID != name]
+#        try:
+#            del self.nodes[name]
+#        except:
+#            raise ValueError("Node %s does not exists" % name)
+
+#        self.nodes = [n for n in self.nodes if n.ID != name]
+#        idx = self.nodes.index(name)
+#        return self.nodes.pop(idx)
+
+        self.nodes.remove(node)
 
 
     def get_node(self, ID):
         """ Returns the node with the given ID or None.
         """
         for node in self.nodes:
-            if node.ID == ID:
+            if node.ID == str(ID):
                 return node
+        return None
+
+
+    def delete_edge(self, tail_node_or_ID, head_node_or_ID):
+        """ Removes an edge from the graph. Returns the deleted edge or None.
+        """
+        if isinstance(tail_node_or_ID, Node):
+            tail_node = tail_node_or_ID
         else:
+            tail_node = self.get_node(tail_node_or_ID)
+
+        if isinstance(head_node_or_ID, Node):
+            head_node = head_node_or_ID
+        else:
+            head_node = self.get_node(head_node_or_ID)
+
+        if (tail_node is None) or (head_node is None):
             return None
+
+        for i, edge in enumerate(self.edges):
+            if (edge.tail_node == tail_node) and (edge.head_node == head_node):
+                edge = self.edges.pop(i)
+                return edge
+
+        return None
 
 
     def add_edge(self, tail_node_or_ID, head_node_or_ID, **kwds):
@@ -612,25 +648,22 @@ class BaseGraph ( HasTraits ):
 #                self._update_id_node_map()
 
 
-    @on_trait_change("nodes,edges")
-    def _on_node_or_edge(self, object, name, old, new):
-        """ Handles the list of nodes being set.
-        """
-        self.component.remove( *[r.component for r in old] )
-        self.component.add( *[a.component for a in new] )
-        self.component.request_redraw()
+#    @on_trait_change("nodes,edges")
+#    def _on_node_or_edge(self, object, name, old, new):
+#        """ Handles the list of nodes being set.
+#        """
+#        self.component.remove( *[r.component for r in old] )
+#        self.component.add( *[a.component for a in new] )
+#        self.component.request_redraw()
 
 
-    @on_trait_change("nodes_items,edges_items")
-    def _on_node_or_edge_items(self, event):
-        """ Handles addition and removal of nodes.
-        """
-#        for node in event.added:
-#            node.parse_xdot_drawing_directive("c 5 -black e 18 36 18 18")
-
-        self.component.add( *[a.component for a in event.added] )
-        self.component.remove( *[r.component for r in event.removed] )
-        self.component.request_redraw()
+#    @on_trait_change("nodes_items,edges_items")
+#    def _on_node_or_edge_items(self, event):
+#        """ Handles addition and removal of nodes.
+#        """
+#        self.component.add( *[a.component for a in event.added] )
+#        self.component.remove( *[r.component for r in event.removed] )
+#        self.component.request_redraw()
 
 
 #    def _update_id_node_map(self):

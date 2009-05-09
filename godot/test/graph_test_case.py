@@ -188,6 +188,18 @@ class GraphTestCase(unittest.TestCase):
         self.assertEqual(len(g.clusters), 2)
 
 
+    def test_delete_node(self):
+        """ Test removing a node from a graph.
+        """
+        g = Graph()
+        added1 = g.add_node("node1")
+        added2 = g.add_node("node2")
+        self.assertEqual(len(g.nodes), 2)
+        g.delete_node("node1")
+        g.delete_node(added2)
+        self.assertEqual(len(g.nodes), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
 

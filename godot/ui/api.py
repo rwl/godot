@@ -21,7 +21,7 @@
 #------------------------------------------------------------------------------
 
 from graph_editor \
-    import GraphEditor, GraphNode
+    import GraphEditor, GraphCanvas, GraphNode, GraphEdge
 
 from graph_view_model \
     import GraphViewModel

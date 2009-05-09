@@ -30,25 +30,30 @@
 import unittest
 
 from enthought.traits.api \
-    import HasTraits, ListInstance, Str, Instance, List
+    import HasTraits, ListInstance, Str, Instance, List, Button
 
 from enthought.traits.ui.api \
-    import View, Item, Group, ModelView
+    import View, Item, Group, ModelView, TreeEditor, TreeNode, HGroup
 
 from godot.ui.api \
-    import GraphEditor, GraphNode
+    import GraphEditor, GraphCanvas, GraphNode, GraphEdge
 
 #------------------------------------------------------------------------------
 #  "DomainNode" class:
 #------------------------------------------------------------------------------
 
+class OtherNode(HasTraits):
+    name = Str("othernode")
+
 class DomainNode(HasTraits):
-    name = Str("node")
+    name = Str("graphnode")
+    other = Instance(OtherNode)
 
 class OtherNode(HasTraits):
-    name = Str("other")
+    name = Str("othernode")
 
 class DomainEdge(HasTraits):
+    name = Str("graphedge")
     source = Instance(DomainNode)
     target = Instance(DomainNode)
 
@@ -57,26 +62,65 @@ class DomainModel(HasTraits):
     edges = List( Instance(DomainEdge) )
     other_nodes = List( Instance(OtherNode) )
 
-graph_editor = GraphEditor(
+tree_editor = TreeEditor(
     nodes = [
-        GraphNode( child_of = "nodes",
+        TreeNode(node_for=[DomainModel], label="=Model"),
+        TreeNode(node_for=[DomainModel], label="=Nodes", children="nodes",
+            add=[DomainNode]),
+        TreeNode(node_for=[DomainModel], label="=Edges", children="edges",
+            add=[DomainEdge]),
+        TreeNode(node_for=[DomainModel], label="=Other Nodes",
+            children="other_nodes", add=[OtherNode]),
+        TreeNode(node_for=[DomainNode], label="name"),
+        TreeNode(node_for=[DomainEdge], label="name"),
+        TreeNode(node_for=[OtherNode], label="name")
+    ], editable=False
+)
+
+graph_editor = GraphEditor(
+    canvas = GraphCanvas( node_children=["nodes", "other_nodes"],
+                          edge_children=["edges"] ),
+    nodes = [
+        GraphNode( node_for = [DomainNode],
                    label    = "name",
-                   node_for = [DomainNode],
                    dot_attr = {"shape": "circle"}
         ),
-        GraphNode( child_of = "other_nodes",
+        GraphNode( node_for = [OtherNode],
                    label    = "name",
-                   node_for = [OtherNode],
                    dot_attr = {"shape": "triangle"}
         )
+    ],
+    edges = [
+        GraphEdge( edge_for  = [DomainEdge],
+                   head_name = "target",
+                   tail_name = "source" )
     ]
 )
 
 class DomainViewModel(ModelView):
+    add_node = Button
+    del_node = Button("Remove node")
+
     traits_view = View(
-        Item("model", style="custom"),
-        Item("model", editor=graph_editor, show_label=False),
-        resizable=True)
+        HGroup(
+            Item("model", editor=tree_editor, show_label=False),
+            Item("model", editor=graph_editor, show_label=False),
+    #        Item("add_node", show_label=False),
+    #        Item("del_node", show_label=False, enabled_when="model.nodes"),
+            layout="split", id=".splitter"
+        ),
+        resizable=True,
+        id="godot.editor_test.domain_view_model",
+        close_result=True)
+
+    def _add_node_fired(self):
+        node = DomainNode(name="new")
+        self.model.nodes.append(node)
+
+    def _del_node_fired(self):
+        if self.model.nodes:
+            popped = self.model.nodes.pop()
+            print "POPPED:", popped
 
 #------------------------------------------------------------------------------
 #  "GraphEditorTestCase" class:

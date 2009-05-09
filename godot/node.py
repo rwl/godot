@@ -480,6 +480,8 @@ class Node(HasTraits):
                 Group(["z", "vertices", "nojustify", "colorscheme", "group",
                     "peripheries", "URL", "samplepoints", "skew", "root"],
                     label="Tertiary"),
+                Group(Item("label", style="custom", show_label=False),
+                    label="HTML"),
 #                Group(Item("component", show_label=False, style="custom"),
 #                    label="Component", scrollable=True),
 #                Group(Item("drawing", show_label=False, style="custom"),

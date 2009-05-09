@@ -29,7 +29,7 @@
 
 from enthought.traits.api \
     import HasTraits, HasPrivateTraits, Any, Dict, Bool, Tuple, Int, \
-    List, Instance, Str, Enum, Callable, Any
+    List, Instance, Str, Enum, Callable, Any, Class
 
 from enthought.traits.ui.editor_factory \
     import EditorFactory
@@ -51,6 +51,21 @@ from godot.api \
     import Graph
 
 #------------------------------------------------------------------------------
+#  'GraphCanvas' class:
+#------------------------------------------------------------------------------
+
+class GraphCanvas ( HasPrivateTraits ):
+    """ Defines a representation of a graph canvas for use by the graph editor
+        and the graph editor factory classes.
+    """
+
+    # Names of list traits whose elements are represented as nodes.
+    node_children = List(Str)
+
+    # Names of the list traits whose elements are represented as edges.
+    edge_children = List(Str)
+
+#------------------------------------------------------------------------------
 #  'GraphNode' class:
 #------------------------------------------------------------------------------
 
@@ -61,7 +76,7 @@ class GraphNode ( HasPrivateTraits ):
 
     # Name of the context object's trait that contains the object being
     # represented by the node.
-    child_of = Str
+#    child_of = Str
 
     # Either the name of a trait containing a label, or a constant label, if
     # the string starts with '='.
@@ -70,10 +85,10 @@ class GraphNode ( HasPrivateTraits ):
     # Function for formatting the label.
     formatter = Callable
 
-    # List of object classes and/or interfaces that the node applies to
+    # List of object classes and/or interfaces that the node applies to.
     node_for = List( Any )
 
-    # Dot attributes to be applied to the node node.
+    # Dot attributes to be applied to the node.
     dot_attr = Dict(Str, Any)
 
     #---------------------------------------------------------------------------
@@ -111,12 +126,33 @@ class GraphNode ( HasPrivateTraits ):
 
     def when_label_changed ( self, object, listener, remove ):
         """ Sets up or removes a listener for the label being changed on a
-        specified object.
+            specified object.
         """
         label = self.label
         if label[:1] != '=':
             object.on_trait_change( listener, label, remove = remove,
                                     dispatch = 'ui' )
+
+#------------------------------------------------------------------------------
+#  'GraphEdge' class:
+#------------------------------------------------------------------------------
+
+class GraphEdge ( HasPrivateTraits ):
+    """ Defines a representation of a graph edge for use by the graph editor
+        and the graph editor factory classes.
+    """
+
+#    head_nodes = List( Instance(HasTraits) )
+    head_name = Str
+
+#    tail_nodes = List( Instance(HasTraits) )
+    tail_name = Str
+
+    # List of object classes and/or interfaces that the edge applies to.
+    edge_for = List( Any )
+
+    # Dot attributes to be applied to the edge.
+    dot_attr = Dict(Str, Any)
 
 #------------------------------------------------------------------------------
 #  'SimpleGraphEditor' class:
@@ -146,12 +182,6 @@ class SimpleGraphEditor ( Editor ):
         """ Finishes initialising the editor by creating the underlying toolkit
             widget.
         """
-        factory = self.factory # GraphEditor
-        ui      = self.ui
-        object  = self.object  # ViewModel
-        name    = self.name    # Trait name
-        desc    = self.description
-
         self._graph = graph = Graph()
         ui = graph.edit_traits(parent=parent, kind="panel")
         self.control = ui.control
@@ -183,6 +213,19 @@ class SimpleGraphEditor ( Editor ):
         """ Updates the editor when the object trait changes externally to the
             editor.
         """
+        object = self.value
+        # Graph the new object...
+        canvas = self.factory.canvas
+        if canvas is not None:
+            for nodes_name in canvas.node_children:
+                node_children = getattr(object, nodes_name)
+                self._add_nodes(node_children)
+
+            for edges_name in canvas.edge_children:
+                edge_children = getattr(object, edges_name)
+                self._add_edges(edge_children)
+
+        # ...then listen for changes.
         self._add_listeners()
 
     #--------------------------------------------------------------------------
@@ -192,46 +235,120 @@ class SimpleGraphEditor ( Editor ):
     def _add_listeners ( self ):
         """ Adds the event listeners for a specified object.
         """
-        canvas = self.value
-        print "CANVAS:", canvas
-        for node in self.factory.nodes:
-            print "CHILD OF:", node.child_of
-            canvas.on_trait_change(self._nodes_replaced, node.child_of)
-            canvas.on_trait_change(self._nodes_changed, node.child_of+"_items")
+        object = self.value
+        canvas = self.factory.canvas
+        if canvas is not None:
+            for name in canvas.node_children:
+                object.on_trait_change(self._nodes_replaced, name)
+                object.on_trait_change(self._nodes_changed, name + "_items")
+
+            for name in canvas.edge_children:
+                object.on_trait_change(self._edges_replaced, name)
+                object.on_trait_change(self._edges_changed, name + "_items")
+        else:
+            raise ValueError("Graph canvas not set for graph editor.")
 
 #        node.when_label_changed( object, self._label_updated, False )
 
+    #--------------------------------------------------------------------------
+    #  Node event handlers:
+    #--------------------------------------------------------------------------
 
     def _nodes_replaced(self, object, name, old, new):
         """ Handles a list of nodes being set.
         """
-        print "Replaced:", object, name, old, new
-
-        graph = self._graph
-
-        graph_node = None
-        for gn in self.factory.nodes:
-            if gn.child_of == name:
-                graph_node = gn
-                break
-
-        if graph is not None:
-            for each_old in old:
-                graph.delete_node( id(each_old) )
-
-            for each_new in new:
-                if graph_node is not None:
-                    node_attr = graph_node.dot_attr
-                else:
-                    node_attr = {}
-
-                node = graph.add_node( id(each_new), **node_attr )
+        self._delete_nodes(old)
+        self._add_nodes(new)
 
 
     def _nodes_changed(self, object, name, undefined, event):
         """ Handles addition and removal of nodes.
         """
-        print "Changed:", object, name, undefined, event
+        self._delete_nodes(event.removed)
+        self._add_nodes(event.added)
+
+
+    def _add_nodes(self, features):
+        """ Adds a node to the graph for each item in 'features' using
+            the GraphNodes from the editor factory.
+        """
+        graph = self._graph
+
+        if graph is not None:
+            for feature in features:
+                for graph_node in self.factory.nodes:
+                    if feature.__class__ in graph_node.node_for:
+                        graph.add_node( id(feature), **graph_node.dot_attr )
+                        break
+
+        graph.arrange_all()
+
+
+    def _delete_nodes(self, features):
+        """ Removes the node corresponding to each item in 'features'.
+        """
+        graph = self._graph
+
+        if graph is not None:
+            for feature in features:
+                graph.delete_node( id(feature) )
+
+        graph.arrange_all()
+
+    #--------------------------------------------------------------------------
+    #  Edge event handlers:
+    #--------------------------------------------------------------------------
+
+    def _edges_replaced(self, object, name, old, new):
+        """ Handles a list of edges being set.
+        """
+        self._delete_edges(old)
+        self._add_edges(new)
+
+
+    def _edges_changed(self, object, name, undefined, event):
+        """ Handles addition and removal of edges.
+        """
+        self._delete_edges(event.removed)
+        self._add_edges(event.added)
+
+
+    def _add_edges(self, features):
+        """ Adds an edge to the graph for each item in 'features' using
+            the GraphEdges from the editor factory.
+        """
+        graph = self._graph
+
+        if graph is not None:
+            for feature in features:
+                for graph_edge in self.factory.edges:
+                    if feature.__class__ in graph_edge.edge_for:
+                        tail_feature = getattr(feature, graph_edge.tail_name)
+                        head_feature = getattr(feature, graph_edge.head_name)
+
+                        graph.add_edge( id(tail_feature), id(head_feature),
+                            **graph_edge.dot_attr )
+
+                        break
+
+        graph.arrange_all()
+
+
+    def _delete_edges(self, features):
+        """ Removes the node corresponding to each item in 'features'.
+        """
+        graph = self._graph
+
+        if graph is not None:
+            for feature in features:
+                for graph_edge in self.factory.edges:
+                    if feature.__class__ in graph_edge.edge_for:
+                        tail_feature = getattr(feature, graph_edge.tail_name)
+                        head_feature = getattr(feature, graph_edge.head_name)
+
+                        graph.delete_edge( id(tail_feature), id(head_feature) )
+
+        graph.arrange_all()
 
 #------------------------------------------------------------------------------
 #  'ToolkitEditorFactory' class:
@@ -244,8 +361,13 @@ class ToolkitEditorFactory ( EditorFactory ):
     #  Trait definitions:
     #--------------------------------------------------------------------------
 
-    # Supported GraphNode objects.
-    nodes = List( GraphNode )
+    canvas = Instance( GraphCanvas )
+
+    # Graph node definitions.
+    nodes = List( Instance(GraphNode) )
+
+    # Graph edge definitions.
+    edges = List( Instance(GraphEdge) )
 
     #--------------------------------------------------------------------------
     #  Property getters:

@@ -935,6 +935,7 @@ class Graph(BaseGraph):
             canvas.add( *components )
 
         self.component = canvas
+        self.vp.request_redraw()
 
 
     def get_node(self, ID):
