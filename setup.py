@@ -24,7 +24,7 @@ setup(
     url="http://rwl.github.com/godot",
     version="0.1",
     entry_points={"gui_scripts": ["pylon = pylon.main:main"]},
-    install_requires=["Traits", "dot2tex"],
+    install_requires=["Traits", "dot2tex", "Envisage"],
     license="MIT",
     name="Godot",
     include_package_data=True,
