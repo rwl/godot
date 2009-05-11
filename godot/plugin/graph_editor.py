@@ -38,49 +38,9 @@ from envisage.resource.api \
 
 from godot.api import Graph, parse_dot_file
 
+from dot_adapter import DotFileIResourceAdapter
+
 IMAGE_LOCATION = join(dirname(__file__), "..", "ui", "images")
-
-#------------------------------------------------------------------------------
-#  "DotFileIResourceAdapter" class:
-#------------------------------------------------------------------------------
-
-class DotFileIResourceAdapter(Adapter):
-    """ Adapts a "File" with Dot language content to 'IResource'.
-    """
-    # Declare the interfaces this adapter implements for its client:
-    adapts(File, to=IResource, when="adaptee.ext=='.dot'")
-
-    # The object that is being adapted.
-    adaptee = Instance(File)
-
-    #--------------------------------------------------------------------------
-    #  "IResource" interface:
-    #--------------------------------------------------------------------------
-
-    def save(self, obj):
-        """ Save to file.
-        """
-        fd = None
-        try:
-            fd = open(self.adaptee.absolute_path, "wb")
-            obj.save_dot(fd)
-        finally:
-            if fd is not None:
-                fd.close()
-#        self.m_time = getmtime(self.adaptee.absolute_path)
-        return
-
-
-    def load(self):
-        """ Load the file.
-        """
-        fd = None
-        try:
-            obj = parse_dot_file( self.adaptee.absolute_path )
-        finally:
-            if fd is not None:
-                fd.close()
-        return obj
 
 #------------------------------------------------------------------------------
 #  "GraphEditor" class:

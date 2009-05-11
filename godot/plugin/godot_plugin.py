@@ -35,6 +35,8 @@ class GodotPlugin(Plugin):
 
     # Extension point IDs
     EDITORS = "envisage.resource.editors"
+    NEW_WIZARDS = "envisage.resource.new_wizards"
+    ACTION_SETS = "enthought.envisage.ui.workbench.action_sets"
 
     # Unique plugin identifier
     id = "godot.plugin"
@@ -49,6 +51,12 @@ class GodotPlugin(Plugin):
     # Contributed workspace editors:
     editors = List(contributes_to=EDITORS)
 
+    # Contributed new resource wizards:
+    new_wizards = List(contributes_to=NEW_WIZARDS)
+
+    # Contributed action sets:
+    action_sets = List(contributes_to=ACTION_SETS)
+
     #--------------------------------------------------------------------------
     #  "ImageEditorPlugin" interface:
     #--------------------------------------------------------------------------
@@ -60,5 +68,21 @@ class GodotPlugin(Plugin):
         from tree_editor import TreeEditorExtension
 
         return [GraphEditorExtension, TreeEditorExtension]
+
+
+    def _new_wizards_default(self):
+        """ Trait initialiser.
+        """
+        from wizard import NewDotWizardExtension
+
+        return [NewDotWizardExtension]
+
+
+    def _action_sets_default(self):
+        """ Trait initialiser.
+        """
+        from action import GodotWorkbenchActionSet
+
+        return [GodotWorkbenchActionSet]
 
 # EOF -------------------------------------------------------------------------

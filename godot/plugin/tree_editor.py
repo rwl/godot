@@ -39,6 +39,8 @@ from envisage.resource.api \
 from godot.api import Graph, parse_dot_file
 from godot.ui.graph_tree import graph_tree_editor
 
+from dot_adapter import DotFileIResourceAdapter
+
 IMAGE_LOCATION = join(dirname(__file__), "..", "ui", "images")
 
 #------------------------------------------------------------------------------
