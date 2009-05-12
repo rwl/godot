@@ -24,6 +24,7 @@
 
 from os.path import dirname, join
 
+from enthought.traits.api import Str
 from enthought.pyface.api import ImageResource
 
 from envisage.resource.wizard.new_resource_wizard import NewResourceWizard

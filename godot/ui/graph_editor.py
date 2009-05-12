@@ -91,6 +91,12 @@ class GraphNode ( HasPrivateTraits ):
     # Dot attributes to be applied to the node.
     dot_attr = Dict(Str, Any)
 
+    # Text to be displayed as a tip for usage.
+    tooltip = Str
+
+    # Called when the graph node is double-clicked.
+    on_dclick = Callable
+
     #---------------------------------------------------------------------------
     #  Gets the label to display for a specified object:
     #---------------------------------------------------------------------------
@@ -368,6 +374,9 @@ class ToolkitEditorFactory ( EditorFactory ):
 
     # Graph edge definitions.
     edges = List( Instance(GraphEdge) )
+
+    # Called when a graph element is selected.
+    on_select = Callable
 
     #--------------------------------------------------------------------------
     #  Property getters:

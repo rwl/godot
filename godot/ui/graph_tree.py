@@ -284,7 +284,7 @@ graph_tree_editor = TreeEditor(
         TreeNode(node_for=[Node], label="ID", icon_item="node"),
         TreeNode(node_for=[Edge], label="name", icon_item="edge")
     ],
-    orientation="vertical", editable=False, hide_root=True,
+    orientation="vertical", editable=False,# hide_root=True,
     on_dclick=lambda obj: obj.edit_traits(kind="livemodal"),
 #    selected="selected_graph"
 )
