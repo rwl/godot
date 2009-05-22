@@ -34,8 +34,8 @@ class GodotPlugin(Plugin):
     """
 
     # Extension point IDs
-    EDITORS = "envisage.resource.editors"
-    NEW_WIZARDS = "envisage.resource.new_wizards"
+    EDITORS = "puddle.resource.editors"
+    NEW_WIZARDS = "puddle.resource.new_wizards"
     ACTION_SETS = "enthought.envisage.ui.workbench.action_sets"
 
     # Unique plugin identifier

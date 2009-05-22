@@ -20,7 +20,7 @@
 #  IN THE SOFTWARE.
 #------------------------------------------------------------------------------
 
-""" Defines a representation of a graph in Graphviz"s dot language.
+""" Defines a representation of a graph in Graphviz's dot language.
 """
 
 #------------------------------------------------------------------------------

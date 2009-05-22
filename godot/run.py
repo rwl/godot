@@ -4,10 +4,10 @@ import logging
 
 from enthought.envisage.core_plugin import CorePlugin
 
-from envisage.plugin import EnvisagePlugin
-from envisage.resource.resource_plugin import ResourcePlugin
-from envisage.workbench.workbench_plugin import WorkbenchPlugin
-from envisage.workbench.workbench_application import WorkbenchApplication
+from puddle.plugin import PuddlePlugin
+from puddle.resource.resource_plugin import ResourcePlugin
+from puddle.workbench.workbench_plugin import WorkbenchPlugin
+from puddle.workbench.workbench_application import WorkbenchApplication
 
 from enthought.pyface.api import ImageResource
 
@@ -27,7 +27,7 @@ def main():
     """
     application = GodotApplication( id="godot",
         plugins=[CorePlugin(),
-                 EnvisagePlugin(),
+                 PuddlePlugin(),
                  WorkbenchPlugin(),
                  ResourcePlugin(),
                  GodotPlugin()] )

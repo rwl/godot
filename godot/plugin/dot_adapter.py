@@ -24,10 +24,10 @@
 
 from os.path import exists, basename, join, dirname
 
-from enthought.traits.api import Instance, Str, Adapter, adapts
+from enthought.traits.api import HasTraits, Instance, Str, Adapter, adapts
 from enthought.io.api import File
 
-from envisage.resource.i_resource import IResource
+from puddle.resource.i_resource import IResource
 
 from godot.api import parse_dot_file
 
@@ -35,14 +35,23 @@ from godot.api import parse_dot_file
 #  "DotFileIResourceAdapter" class:
 #------------------------------------------------------------------------------
 
-class DotFileIResourceAdapter(Adapter):
+class DotFileIResourceAdapter(HasTraits):
     """ Adapts a "File" with Dot language content to 'IResource'.
     """
     # Declare the interfaces this adapter implements for its client:
     adapts(File, to=IResource, when="adaptee.ext=='.dot'")
 
     # The object that is being adapted.
-    adaptee = Instance(File)
+#    adaptee = Instance(File)
+    dot_file = Instance(File)
+
+    #--------------------------------------------------------------------------
+    #  object interface:
+    #--------------------------------------------------------------------------
+
+    def __init__ (self, dot_file):
+        self.dot_file = dot_file
+        super(HasTraits, self).__init__(dot_file=dot_file)
 
     #--------------------------------------------------------------------------
     #  "IResource" interface:
@@ -53,7 +62,7 @@ class DotFileIResourceAdapter(Adapter):
         """
         fd = None
         try:
-            fd = open(self.adaptee.absolute_path, "wb")
+            fd = open(self.dot_file.absolute_path, "wb")
             obj.save_dot(fd)
         finally:
             if fd is not None:
@@ -67,7 +76,7 @@ class DotFileIResourceAdapter(Adapter):
         """
         fd = None
         try:
-            obj = parse_dot_file( self.adaptee.absolute_path )
+            obj = parse_dot_file( self.dot_file.absolute_path )
         finally:
             if fd is not None:
                 fd.close()

@@ -33,7 +33,7 @@ from enthought.traits.ui.api import View, Item, Group
 from enthought.traits.ui.api import ImageEditor as ImageTraitEditor
 from enthought.pyface.image_resource import ImageResource
 
-from envisage.resource.api \
+from puddle.resource.api \
     import IResource, ResourceEditor, ResourcePlugin, Editor
 
 from godot.api import Graph, parse_dot_file
