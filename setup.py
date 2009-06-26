@@ -17,21 +17,18 @@
 
 from setuptools import setup, find_packages
 
-setup(
-    author="Richard W. Lincoln",
-    author_email="r dot w dot lincoln at gmail dot com",
-    description="Python implementation of the DOT language with Traits.",
-    url="http://rwl.github.com/godot",
-    version="0.1",
-    entry_points={"gui_scripts": ["pylon = pylon.main:main"]},
-    install_requires=["Traits", "dot2tex", "Envisage"],
-    license="MIT",
-    name="Godot",
-    include_package_data=True,
-    packages=find_packages(),
-    test_suite = "godot.test",
-    platforms = ["Windows", "Linux", "Mac OS-X", "Unix", "Solaris"],
-    zip_safe=True
-)
+setup(author="Richard W. Lincoln",
+      author_email="r.w.lincoln@gmail.com",
+      description="Python implementation of the DOT language with Traits.",
+      url="http://rwl.github.com/godot",
+      version="0.1.1",
+      entry_points={"gui_scripts": ["godot = godot.run:main"]},
+      install_requires=["Traits", "dot2tex", "pyparsing", "Puddle"],
+      license="MIT",
+      name="Godot",
+      include_package_data=True,
+      packages=find_packages(),
+      test_suite="godot.test",
+      zip_safe=False)
 
 # EOF -------------------------------------------------------------------------
